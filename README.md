@@ -7,4 +7,8 @@ A simple puzzle game coded in python as an exercise for fun.
 - adding custom images
 - many puzzle sizes
 - different piece types (normal, square, hexagon,...)
-- other features
+- optional timer
+- music
+- finding border pieces
+- puzzle categories
+- ...
