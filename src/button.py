@@ -27,3 +27,6 @@ class button:
         surface.blit(text_surface, text_rect)
 
         return action
+
+    def change_position(self, newX, newY):
+        self.rect.topleft = (newX,newY)
