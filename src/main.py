@@ -2,7 +2,7 @@ import pygame
 
 from src.button import button
 from src.game_state import game_state as state
-from src.square_puzzle_piece import square_piece
+from src.puzzle import puzzle
 
 pygame.init()
 
@@ -21,7 +21,7 @@ TEXT_COL = (255,255,255)
 
 #game variables
 game_state = state.MENU
-puzzle_pieces = [square_piece(300, 300, 50)]
+puzzle = puzzle(200, 200, 200, 150)
 active_piece = None
 
 def display_text(text, font, text_col, x, y):
@@ -33,16 +33,6 @@ def resize():
     resume_button.change_position(screen.get_width()/2 - 90, screen.get_height()/2 - 5)
     exit_button.change_position(screen.get_width()/2 - 60, screen.get_height() - 100)
     quit_button.change_position(screen.get_width()/2 - 50, screen.get_height()/2 + 55)
-
-def draw_pieces(surface):
-    active = None
-    for piece in puzzle_pieces:
-        if piece.draw(surface):
-            active = piece
-    if active is None:
-        return None
-    else:
-        return active
 
 start_button = button(350, 295, 100,50,"Play", font, TEXT_COL, (42,68,81))
 resume_button = button(310, 500, 180,50,"Resume", font, TEXT_COL, (42,68,81))
@@ -78,7 +68,7 @@ while run:
             if quit_button.draw(screen):
                 run = False
         case state.PLAY:
-            active_piece = draw_pieces(screen)
+            active_piece = puzzle.draw(screen)
             pass
     resize()
     pygame.display.update()

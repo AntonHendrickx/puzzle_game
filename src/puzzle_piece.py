@@ -14,9 +14,9 @@ class piece(ABC):
 
         if self.piece.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1:
-                self.drag = not self.drag
                 self.clicked = True
-        if pygame.mouse.get_pressed()[0] == 0:
+        if pygame.mouse.get_pressed()[0] == 0 and self.clicked:
+            self.drag = not self.drag
             self.clicked = False
 
     def move_piece(self, rel):
