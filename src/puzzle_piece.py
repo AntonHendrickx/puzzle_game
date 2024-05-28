@@ -20,5 +20,11 @@ class piece(ABC):
             self.clicked = False
 
     def move_piece(self, rel):
-        if self.drag:
+        pos = pygame.mouse.get_pos()
+        if self.drag and self.piece.collidepoint(pos):
             self.piece.move_ip(rel)
+        else:
+            self.drag = False
+
+    def draggable(self, draggable):
+        self.drag = draggable

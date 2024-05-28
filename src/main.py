@@ -21,7 +21,7 @@ TEXT_COL = (255,255,255)
 
 #game variables
 game_state = state.MENU
-puzzle = puzzle(200, 200, 200, 150)
+puzzle = puzzle(50, 50, 600, 700, 33)
 active_piece = None
 
 def display_text(text, font, text_col, x, y):

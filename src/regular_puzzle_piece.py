@@ -3,9 +3,9 @@ from src.puzzle_piece import piece
 
 class regular_piece(piece):
 
-    def __init__(self, x, y, size):
+    def __init__(self, x, y, size_x, size_y):
         super().__init__(x, y)
-        self.piece = pygame.Rect(x, y, size, size)
+        self.piece = pygame.Rect(x, y, size_x, size_y)
 
     def draw(self, surface):
         super().draw(surface)
