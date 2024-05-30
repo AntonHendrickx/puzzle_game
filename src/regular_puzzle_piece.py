@@ -10,4 +10,6 @@ class regular_piece(piece):
     def draw(self, surface):
         super().draw(surface)
         pygame.draw.rect(surface, (255,255,255), self.piece)
-        return self.drag
+
+    def check_collision(self, piece_tocheck):
+        pass

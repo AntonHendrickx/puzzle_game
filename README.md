@@ -13,6 +13,6 @@ A simple puzzle game coded in python as an exercise for fun.
 - puzzle categories
 - ...
 
-#Trello todo's
+# Trello todo's
 
 https://trello.com/b/y8Ph5t37

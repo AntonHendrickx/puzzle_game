@@ -1,76 +1,71 @@
 import pygame
-
 from src.button import button
 from src.game_state import game_state as state
 from src.puzzle import puzzle
 
-pygame.init()
+class Game:
+    def __init__(self):
+        pygame.init()
+        self.SCREEN_WIDTH = 800
+        self.SCREEN_HEIGHT = 600
+        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.RESIZABLE)
+        pygame.display.set_caption("Main menu")
+        self.font = pygame.font.SysFont("arialblack", 40)
+        self.TEXT_COL = (255, 255, 255)
+        self.game_state = state.MENU
+        self.puzzle = puzzle(50, 50, 600, 700, 12)
+        self.start_button = button(350, 295, 100, 50, "Play", self.font, self.TEXT_COL, (42, 68, 81))
+        self.resume_button = button(310, 500, 180, 50, "Resume", self.font, self.TEXT_COL, (42, 68, 81))
+        self.exit_button = button(340, 500, 100, 50, "Exit", self.font, self.TEXT_COL, (42, 68, 81))
+        self.quit_button = button(350, 355, 100, 50, "Quit", self.font, self.TEXT_COL, (42, 68, 81))
 
-#screen initialisation
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+    def display_text(self, text, x, y):
+        img = self.font.render(text, True, self.TEXT_COL)
+        self.screen.blit(img, (x, y))
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
-pygame.display.set_caption("Main menu")
+    def resize(self):
+        self.start_button.change_position(self.screen.get_width() / 2 - 50, self.screen.get_height() / 2 - 5)
+        self.resume_button.change_position(self.screen.get_width() / 2 - 90, self.screen.get_height() / 2 - 5)
+        self.exit_button.change_position(self.screen.get_width() / 2 - 60, self.screen.get_height() - 100)
+        self.quit_button.change_position(self.screen.get_width() / 2 - 50, self.screen.get_height() / 2 + 55)
 
-#fonts
-font = pygame.font.SysFont("arialblack",40)
+    def run_game(self):
+        run = True
+        while run:
+            self.screen.fill((52, 78, 91))
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.game_state = state.PAUSED
+                if event.type == pygame.QUIT:
+                    run = False
+                if self.game_state == state.PLAY:
+                    if event.type == pygame.MOUSEBUTTONUP:
+                        self.puzzle.handle_click_stop()
+                    elif event.type == pygame.MOUSEBUTTONDOWN:
+                        self.puzzle.handle_click(pygame.mouse.get_pos())
+                    elif event.type == pygame.MOUSEMOTION:
+                        self.puzzle.move(event.rel)
 
-#text colours
-TEXT_COL = (255,255,255)
+            match self.game_state:
+                case state.PAUSED:
+                    self.display_text("Paused", self.screen.get_width() / 2 - 80, self.screen.get_height() / 6)
+                    if self.resume_button.draw(self.screen):
+                        self.game_state = state.PLAY
+                    if self.exit_button.draw(self.screen):
+                        self.game_state = state.MENU
+                case state.MENU:
+                    self.display_text("Puzzle", self.screen.get_width() / 2 - 75, self.screen.get_height() / 6)
+                    if self.start_button.draw(self.screen):
+                        self.game_state = state.PLAY
+                    if self.quit_button.draw(self.screen):
+                        run = False
+                case state.PLAY:
+                    self.puzzle.draw(self.screen)
+            self.resize()
+            pygame.display.update()
+        pygame.quit()
 
-#game variables
-game_state = state.MENU
-puzzle = puzzle(50, 50, 600, 700, 33)
-active_piece = None
-
-def display_text(text, font, text_col, x, y):
-    img = font.render(text, True, text_col)
-    screen.blit(img, (x, y))
-
-def resize():
-    start_button.change_position(screen.get_width()/2 - 50, screen.get_height()/2 - 5)
-    resume_button.change_position(screen.get_width()/2 - 90, screen.get_height()/2 - 5)
-    exit_button.change_position(screen.get_width()/2 - 60, screen.get_height() - 100)
-    quit_button.change_position(screen.get_width()/2 - 50, screen.get_height()/2 + 55)
-
-start_button = button(350, 295, 100,50,"Play", font, TEXT_COL, (42,68,81))
-resume_button = button(310, 500, 180,50,"Resume", font, TEXT_COL, (42,68,81))
-exit_button = button(340, 500, 100,50,"Exit", font, TEXT_COL, (42,68,81))
-quit_button = button(350, 355, 100,50,"Quit", font, TEXT_COL, (42,68,81))
-
-run = True
-while run:
-
-    screen.fill((52,78,91))
-
-    for event in pygame.event.get():
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                game_state = state.PAUSED
-        if event.type == pygame.QUIT:
-            run = False
-        if event.type == pygame.MOUSEMOTION:
-            if active_piece is not None:
-                active_piece.move_piece(event.rel)
-
-    match game_state:
-        case state.PAUSED:
-            display_text("Paused", font, TEXT_COL, screen.get_width() / 2 - 80, screen.get_height() / 6)
-            if resume_button.draw(screen):
-                game_state = state.PLAY
-            if exit_button.draw(screen):
-                game_state = state.MENU
-        case state.MENU:
-            display_text("Puzzle", font, TEXT_COL, screen.get_width() / 2 - 75, screen.get_height() / 6)
-            if start_button.draw(screen):
-                game_state = state.PLAY
-            if quit_button.draw(screen):
-                run = False
-        case state.PLAY:
-            active_piece = puzzle.draw(screen)
-            pass
-    resize()
-    pygame.display.update()
-
-pygame.quit()
+if __name__ == "__main__":
+    game = Game()
+    game.run_game()
