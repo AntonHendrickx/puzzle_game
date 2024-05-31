@@ -1,5 +1,6 @@
 import math
 import random
+import pygame.image
 
 from src.regular_puzzle_piece import regular_piece
 from src.timer import Timer
@@ -7,7 +8,7 @@ from src.timer import Timer
 class puzzle:
 
     #use image later instead of rect
-    def __init__(self, surface, size_x, size_y, amount):
+    def __init__(self, surface, size_x, size_y, amount, image_path):
         self.amount = amount
         self.pieces = {}
         self.amounts = ()
@@ -16,10 +17,13 @@ class puzzle:
         self.active = None
         self.drag_timer = Timer(200)
         self.click = False
+        image = pygame.image.load(image_path)
+        self.image = pygame.transform.scale(image, (size_x, size_y))
 
     def draw(self, surface):
-        for (_,_), piece in self.pieces.items():
-            piece.draw(surface)
+        for (row,col), piece in self.pieces.items():
+            piece_image = self.get_piece_image(row, col, piece.get_width(), piece.get_height())
+            piece.draw(surface, piece_image)
 
     def __set_piece_dims(self, width, height, amount):
 
@@ -62,6 +66,11 @@ class puzzle:
         val_list = list(self.pieces.values())
         return key_list[val_list.index(piece)]
 
+    def get_piece_image(self, row, col, width, height):
+        x = col * width
+        y = row * height
+        return self.image.subsurface(pygame.Rect(x, y, width, height))
+
     def check_collisions(self, piece):
         piece_row, piece_col = self.find_position(piece)
         neighbors = [self.pieces.get(piece_row-1, piece_col),self.pieces.get(piece_row+1, piece_col),
@@ -86,13 +95,13 @@ class puzzle:
                         self.drag_timer.start()
                         break
             else:
-                self.check_collisions(self.active)
+                #self.check_collisions(self.active)
                 self.active = None
 
 
     def handle_click_stop(self):
         if self.drag_timer.is_time_up(): #dragging is active
-            self.check_collisions(self.active)
+            #self.check_collisions(self.active)
             self.active = None
         self.drag_timer.stop()
         self.click = False

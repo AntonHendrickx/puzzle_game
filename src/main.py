@@ -13,7 +13,7 @@ class Game:
         self.font = pygame.font.SysFont("arialblack", 40)
         self.TEXT_COL = (255, 255, 255)
         self.game_state = state.MENU
-        self.puzzle = puzzle(self.screen, 600, 700, 500)
+        self.puzzle = None
         self.start_button = button(350, 295, 100, 50, "Play", self.font, self.TEXT_COL, (42, 68, 81))
         self.resume_button = button(310, 500, 180, 50, "Resume", self.font, self.TEXT_COL, (42, 68, 81))
         self.options_button = button(310, 400, 180, 50, "Options", self.font, self.TEXT_COL, (42, 68, 81))
@@ -64,6 +64,7 @@ class Game:
                     self.display_text("Puzzle", self.screen.get_width() / 2 - 75, self.screen.get_height() / 6)
                     if self.start_button.draw(self.screen):
                         self.game_state = state.PLAY
+                        self.puzzle = puzzle(self.screen, 600, 700, 500, "images/puzzle_test.png")
                     if self.quit_button.draw(self.screen):
                         run = False
                 case state.OPTIONS:

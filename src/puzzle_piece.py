@@ -8,7 +8,15 @@ class piece(ABC):
         self.direction = "up"
 
     @abstractmethod
-    def draw(self, surface):
+    def get_width(self):
+        pass
+
+    @abstractmethod
+    def get_height(self):
+        pass
+
+    @abstractmethod
+    def draw(self, surface, image):
         pass
 
     def move(self, rel):
