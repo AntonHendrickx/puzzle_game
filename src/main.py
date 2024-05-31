@@ -6,14 +6,14 @@ from src.puzzle import puzzle
 class Game:
     def __init__(self):
         pygame.init()
-        self.SCREEN_WIDTH = 800
-        self.SCREEN_HEIGHT = 600
+        self.SCREEN_WIDTH = 1200
+        self.SCREEN_HEIGHT = 900
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.RESIZABLE)
         pygame.display.set_caption("Main menu")
         self.font = pygame.font.SysFont("arialblack", 40)
         self.TEXT_COL = (255, 255, 255)
         self.game_state = state.MENU
-        self.puzzle = puzzle(50, 50, 600, 700, 12)
+        self.puzzle = puzzle(self.screen, 600, 700, 500)
         self.start_button = button(350, 295, 100, 50, "Play", self.font, self.TEXT_COL, (42, 68, 81))
         self.resume_button = button(310, 500, 180, 50, "Resume", self.font, self.TEXT_COL, (42, 68, 81))
         self.options_button = button(310, 400, 180, 50, "Options", self.font, self.TEXT_COL, (42, 68, 81))
@@ -46,7 +46,7 @@ class Game:
                 if self.game_state == state.PLAY:
                     if event.type == pygame.MOUSEBUTTONUP:
                         self.puzzle.handle_click_stop()
-                    elif event.type == pygame.MOUSEBUTTONDOWN:
+                    elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         self.puzzle.handle_click(pygame.mouse.get_pos())
                     elif event.type == pygame.MOUSEMOTION:
                         self.puzzle.move(event.rel)

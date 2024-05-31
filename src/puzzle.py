@@ -1,4 +1,5 @@
 import math
+import random
 
 from src.regular_puzzle_piece import regular_piece
 from src.timer import Timer
@@ -6,21 +7,12 @@ from src.timer import Timer
 class puzzle:
 
     #use image later instead of rect
-    def __init__(self, x, y, size_x, size_y, amount):
+    def __init__(self, surface, size_x, size_y, amount):
         self.amount = amount
-        short, long = self.get_puzzle_divisions()
-        if (short or long) == 1:
-            raise AttributeError("amount of pieces is prime")
-        if size_x > size_y:
-            piece_dims = size_x / long, size_y / short
-            amounts = long, short
-        else:
-            piece_dims = size_x / short, size_y / long
-            amounts = short, long
-        if not (0.6 < (piece_dims[0] / piece_dims[1]) < 1.6):
-            raise AttributeError(f"too rectangular pieces: {piece_dims}, {amounts}")
         self.pieces = {}
-        self.create_pieces(x,y,amounts, piece_dims)
+        self.amounts = ()
+        piece_dims = self.__set_piece_dims(size_x, size_y, amount)
+        self.create_pieces(surface, self.amounts, piece_dims)
         self.active = None
         self.drag_timer = Timer(200)
         self.click = False
@@ -29,20 +21,40 @@ class puzzle:
         for (_,_), piece in self.pieces.items():
             piece.draw(surface)
 
-    def get_puzzle_divisions(self):
-        sroot = int(math.sqrt(self.amount))
-        while self.amount % sroot != 0:
-            sroot -= 1
-        return sroot, self.amount // sroot
+    def __set_piece_dims(self, width, height, amount):
 
-    def create_pieces(self, start_x, start_y, amounts, piece_dim):
+        def within_ratio(w, h):
+            ratio = w / h if w >= h else h / w
+            return 0.6 <= ratio <= 1.6
+
+        def factor_pairs(n):
+            return [(i, n // i) for i in range(1, int(math.sqrt(n)) + 1) if n % i == 0]
+
+        rect_ratio = width / height if width >= height else height / width
+        pairs = factor_pairs(amount)
+        pairs.sort(key=lambda x: abs(x[0] - x[1]))
+
+        for factor_w, factor_h in pairs:
+            pair_ratio = factor_w / factor_h if factor_w >= factor_h else factor_h / factor_w
+            if (rect_ratio >= 1 and pair_ratio >= 1) or (rect_ratio < 1 and pair_ratio < 1):
+                square_width = width / factor_w
+                square_height = height / factor_h
+
+                if within_ratio(square_width, square_height):
+                    self.amounts = (factor_w, factor_h)
+                    return square_width, square_height
+
+        raise AttributeError("Invalid square amount")
+
+    def create_pieces(self,surface, amounts, piece_dim):
         piece_width, piece_height = piece_dim
         cols, rows = amounts
+        screen_width, screen_height = surface.get_size()
 
         for row in range(rows):
             for col in range(cols):
-                x = start_x + col * piece_width
-                y = start_y + row * piece_height
+                x = random.randint(0, int(screen_width - piece_width))
+                y = random.randint(0, int(screen_height - piece_height))
                 self.pieces[(row, col)] = regular_piece(x, y, piece_width, piece_height)
 
     def find_position(self, piece):

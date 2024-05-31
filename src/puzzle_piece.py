@@ -5,6 +5,7 @@ class piece(ABC):
         self.topleft = (x,y)
         self.piece = None
         self.clicked = False
+        self.direction = "up"
 
     @abstractmethod
     def draw(self, surface):
@@ -18,4 +19,4 @@ class piece(ABC):
 
     @abstractmethod
     def check_collision(self, piece_tocheck):
-        pass
+        return piece_tocheck.direction == self.direction

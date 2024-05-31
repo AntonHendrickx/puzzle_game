@@ -20,4 +20,5 @@ class square_piece(piece):
         pygame.draw.rect(surface, (255,255,255), self.piece)
 
     def check_collision(self, piece_tocheck):
-        pass
+        if super().check_collision(piece_tocheck):
+            pass
