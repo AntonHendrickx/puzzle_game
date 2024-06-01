@@ -50,6 +50,11 @@ class Game:
                         self.puzzle.handle_click(pygame.mouse.get_pos())
                     elif event.type == pygame.MOUSEMOTION:
                         self.puzzle.move(event.rel)
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_r:
+                            self.puzzle.rotate(True)
+                        elif event.key == pygame.K_t:
+                            self.puzzle.rotate(False)
 
             match self.game_state:
                 case state.PAUSED:
@@ -64,7 +69,7 @@ class Game:
                     self.display_text("Puzzle", self.screen.get_width() / 2 - 75, self.screen.get_height() / 6)
                     if self.start_button.draw(self.screen):
                         self.game_state = state.PLAY
-                        self.puzzle = puzzle(self.screen, 700, 600, 12, "images/puzzle_test.png")
+                        self.puzzle = puzzle(self.screen, 600, 300, 8, "images/puzzle_test.png", False)
                     if self.quit_button.draw(self.screen):
                         run = False
                 case state.OPTIONS:
@@ -73,6 +78,8 @@ class Game:
                         self.game_state = state.PAUSED
                 case state.PLAY:
                     self.puzzle.draw(self.screen)
+                    if self.puzzle.is_complete():
+                        self.game_state = state.MENU
             self.resize()
             pygame.display.update()
         pygame.quit()

@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
 
 class piece(ABC):
-    def __init__(self, x, y):
+    def __init__(self, x, y, image, direction = 0):
+        self.DIRECTIONS = ["up", "right", "down", "left"]
         self.topleft = (x,y)
         self.piece = None
         self.clicked = False
-        self.direction = "up"
+        self.direction = direction
+        self.image = image
 
     @abstractmethod
     def get_width(self):
@@ -16,7 +18,7 @@ class piece(ABC):
         pass
 
     @abstractmethod
-    def draw(self, surface, image):
+    def draw(self, surface):
         pass
 
     def move(self, rel):
@@ -25,6 +27,20 @@ class piece(ABC):
     def click(self,pos):
         return self.piece.collidepoint(pos)
 
+    def get_dir(self):
+        return self.DIRECTIONS[self.direction]
+
     @abstractmethod
-    def check_collision(self, piece_tocheck):
-        return piece_tocheck.direction == self.direction
+    def rotate(self, clockwise):
+        if clockwise:
+            self.direction += 1
+        else:
+            self.direction -= 1
+
+    @abstractmethod
+    def check_collision(self, piece_tocheck, rel_pos):
+        return piece_tocheck.get_dir() == self.get_dir()
+
+    @abstractmethod
+    def set_position(self, p, rel_pos):
+        pass
