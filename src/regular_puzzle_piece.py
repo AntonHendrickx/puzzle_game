@@ -1,7 +1,7 @@
 import pygame
-from src.puzzle_piece import piece
+from src.puzzle_piece import Piece
 
-class regular_piece(piece):
+class RegularPiece(Piece):
 
     def __init__(self, x, y, size_x, size_y, image, rotation = 0):
         super().__init__(x, y, image, rotation)
@@ -61,3 +61,20 @@ class regular_piece(piece):
         else:
             pygame.transform.rotate(self.image, 90)
             self.piece = self.image.get_rect(center=old_center)
+
+    def serialize(self):
+        return {
+            'x': self.piece.x,
+            'y': self.piece.y,
+            'width': self.piece.width,
+            'height': self.piece.height,
+            'image': pygame.image.tostring(self.image, "ARGB"),
+            'rotation': self.direction
+        }
+
+    @staticmethod
+    def deserialize(data):
+        image = pygame.image.fromstring(data['image'], (data['width'], data['height']),"ARGB")
+        piece_image = pygame.transform.scale(image, (data['width'], data['height']))
+        piece = RegularPiece(data['x'], data['y'], data['width'], data['height'], piece_image, data['rotation'])
+        return piece

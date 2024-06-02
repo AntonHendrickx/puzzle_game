@@ -1,7 +1,7 @@
 import pygame
 from src.button import button
 from src.game_state import game_state as state
-from src.puzzle import puzzle
+from src.puzzle import Puzzle
 
 class Game:
     def __init__(self):
@@ -62,6 +62,7 @@ class Game:
                     if self.resume_button.draw(self.screen):
                         self.game_state = state.PLAY
                     if self.exit_button.draw(self.screen):
+                        self.puzzle.save_to_file("saves/savefile.pkl")
                         self.game_state = state.MENU
                     if self.options_button.draw(self.screen):
                         self.game_state = state.OPTIONS
@@ -69,7 +70,9 @@ class Game:
                     self.display_text("Puzzle", self.screen.get_width() / 2 - 75, self.screen.get_height() / 6)
                     if self.start_button.draw(self.screen):
                         self.game_state = state.PLAY
-                        self.puzzle = puzzle(self.screen, 600, 300, 8, "images/puzzle_test.png", False)
+                        self.puzzle = Puzzle.load("saves/savefile.pkl", self.screen)
+                        if not self.puzzle:
+                            self.puzzle = Puzzle(self.screen, 600, 300, 8, "images/puzzle_test.png", False)
                     if self.quit_button.draw(self.screen):
                         run = False
                 case state.OPTIONS:

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-class piece(ABC):
+class Piece(ABC):
     def __init__(self, x, y, image, direction = 0):
         self.DIRECTIONS = ["up", "right", "down", "left"]
         self.topleft = (x,y)
@@ -43,4 +43,13 @@ class piece(ABC):
 
     @abstractmethod
     def set_position(self, p, rel_pos):
+        pass
+
+    @abstractmethod
+    def serialize(self):
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def deserialize(self):
         pass

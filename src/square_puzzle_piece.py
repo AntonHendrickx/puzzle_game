@@ -1,7 +1,7 @@
 import pygame
-from src.puzzle_piece import piece
+from src.puzzle_piece import Piece
 
-class square_piece(piece):
+class SquarePiece(Piece):
 
     def __init__(self, x, y, size_x, size_y,image, rotation = 0):
         super().__init__(x, y,image, rotation)
@@ -60,3 +60,9 @@ class square_piece(piece):
         else:
             pygame.transform.rotate(self.image, 90)
             self.piece = self.image.get_rect(center=old_center)
+
+    def serialize(self):
+        pass
+
+    def deserialize(self):
+        pass

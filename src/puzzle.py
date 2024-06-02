@@ -1,11 +1,12 @@
 import math
+import pickle
 import random
 import pygame.image
 
-from src.regular_puzzle_piece import regular_piece
+from src.regular_puzzle_piece import RegularPiece
 from src.timer import Timer
 
-class puzzle:
+class Puzzle:
 
     #use image later instead of rect
     def __init__(self, surface, size_x, size_y, amount, image_path, rotatable):
@@ -17,6 +18,7 @@ class puzzle:
         self.drag_timer = Timer(200)
         self.click = False
         self.rotatable = rotatable
+        self.image_path = image_path
         image = pygame.image.load(image_path)
         self.image = pygame.transform.scale(image, (size_x, size_y))
         piece_dims = self.__set_piece_dims(size_x, size_y, amount)
@@ -68,7 +70,7 @@ class puzzle:
                 piece_image = self.get_piece_image(row, col, piece_width, piece_height)
                 if self.rotatable:
                     rotation = random.randint(0,3)
-                self.pieces[(row, col)] = regular_piece(x, y, piece_width, piece_height, piece_image, rotation)
+                self.pieces[(row, col)] = RegularPiece(x, y, piece_width, piece_height, piece_image, rotation)
 
     def find_position(self, piece):
         key_list = list(self.pieces.keys())
@@ -151,3 +153,42 @@ class puzzle:
         if len(self.connected_groups) == 1 and len(self.connected_groups[0]) == total_pieces:
             return True
         return False
+
+    def save_to_file(self, filename):
+        with open(filename,'wb') as file:
+            pickle.dump(self.serialize(), file)
+
+    @staticmethod
+    def load(filename, surface):
+        try:
+            with open(filename, 'rb') as file:
+                obj = pickle.load(file)
+                puzzle_found = Puzzle.deserialize(obj, surface)
+                if isinstance(puzzle_found, Puzzle):
+                    return puzzle_found
+                else:
+                    return None
+        except (pickle.UnpicklingError, EOFError, AttributeError, ImportError, IndexError, KeyError):
+            return None
+
+    def serialize(self):
+        return {
+            'size_x': self.image.get_width(),
+            'size_y': self.image.get_height(),
+            'amount': self.amount,
+            'amounts': self.amounts,
+            'pieces': {key: piece.serialize() for key, piece in self.pieces.items()},
+            'connected_groups': [[self.find_position(p) for p in group] for group in self.connected_groups],
+            'active': self.find_position(self.active) if self.active else None,
+            'rotatable': self.rotatable,
+            'image_path': self.image_path
+        }
+
+    @staticmethod
+    def deserialize(data, surface):
+        puzzle = Puzzle(surface, data['size_x'], data['size_y'], data['amount'], data['image_path'], data['rotatable'])
+        puzzle.amounts = data['amounts']
+        puzzle.pieces = {key: RegularPiece.deserialize(piece_data) for key, piece_data in data['pieces'].items()}
+        puzzle.connected_groups = [{puzzle.pieces[pos] for pos in group} for group in data['connected_groups']]
+        puzzle.active = puzzle.pieces[data['active']] if data['active'] else None
+        return puzzle
