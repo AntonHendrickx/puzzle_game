@@ -14,6 +14,8 @@ class Game:
         self.TEXT_COL = (255, 255, 255)
         self.game_state = state.MENU
         self.puzzle = None
+        self.images = []
+        self.image_extensions = ('.png', '.jpg', '.jpeg', '.bmp', '.gif')
         self.start_button = button(350, 295, 100, 50, "Play", self.font, self.TEXT_COL, (42, 68, 81))
         self.resume_button = button(310, 500, 180, 50, "Resume", self.font, self.TEXT_COL, (42, 68, 81))
         self.options_button = button(310, 400, 180, 50, "Options", self.font, self.TEXT_COL, (42, 68, 81))
@@ -32,6 +34,18 @@ class Game:
         self.quit_button.change_position(self.screen.get_width() / 2 - 50, self.screen.get_height() / 2 + 55)
         self.back_button.change_position(self.screen.get_width() / 2 - 60, self.screen.get_height() * 3 / 4 + 15)
         self.options_button.change_position(self.screen.get_width() / 2 - 90, self.screen.get_height() * 2 / 3)
+
+    def is_image_file(self, filename):
+        return filename.lower().endswith(self.image_extensions)
+
+    @staticmethod
+    def load_image(file_path):
+        try:
+            image = pygame.image.load(file_path)
+            return image
+        except pygame.error as e:
+            print(f"Cannot load image: {e}")
+            return None
 
     def run_game(self):
         run = True
@@ -55,7 +69,12 @@ class Game:
                             self.puzzle.rotate(True)
                         elif event.key == pygame.K_t:
                             self.puzzle.rotate(False)
-
+                if self.game_state == state.SELECTION and event.type == pygame.DROPFILE:
+                    file_path = event.file
+                    if self.is_image_file(file_path):
+                        image = self.load_image(file_path)
+                        if image:
+                            self.images.append(file_path)
             match self.game_state:
                 case state.PAUSED:
                     self.display_text("Paused", self.screen.get_width() / 2 - 80, self.screen.get_height() / 6)
@@ -75,6 +94,8 @@ class Game:
                             self.puzzle = Puzzle(self.screen, 600, 300, 8, "images/puzzle_test.png", False)
                     if self.quit_button.draw(self.screen):
                         run = False
+                case state.SELECTION:
+                    pass
                 case state.OPTIONS:
                     self.display_text("Options", self.screen.get_width() / 2 - 90, self.screen.get_height() / 6)
                     if self.back_button.draw(self.screen):
@@ -83,6 +104,7 @@ class Game:
                     self.puzzle.draw(self.screen)
                     if self.puzzle.is_complete():
                         self.game_state = state.MENU
+                        self.puzzle.clearsave("saves/savefile.pkl")
             self.resize()
             pygame.display.update()
         pygame.quit()

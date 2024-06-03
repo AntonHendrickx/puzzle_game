@@ -171,6 +171,10 @@ class Puzzle:
         except (pickle.UnpicklingError, EOFError, AttributeError, ImportError, IndexError, KeyError):
             return None
 
+    def clearsave(self, filename):
+        open(filename, 'w').close()
+
+
     def serialize(self):
         return {
             'size_x': self.image.get_width(),
