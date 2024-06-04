@@ -1,8 +1,9 @@
 import pygame
 
+
 class button:
     def __init__(self, x, y, sizeX, sizeY, text, font, txt_colour, btn_colour):
-        self.rect = pygame.Rect(x,y,sizeX,sizeY)
+        self.rect = pygame.Rect(x, y, sizeX, sizeY)
         self.text = text
         self.font = font
         self.text_color = txt_colour
@@ -15,7 +16,7 @@ class button:
         pos = pygame.mouse.get_pos()
 
         if self.rect.collidepoint(pos):
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+            if pygame.mouse.get_pressed()[0] == 1 and not self.clicked:
                 self.clicked = True
                 action = True
         if pygame.mouse.get_pressed()[0] == 0:
@@ -29,4 +30,4 @@ class button:
         return action
 
     def change_position(self, newX, newY):
-        self.rect.topleft = (newX,newY)
+        self.rect.topleft = (newX, newY)

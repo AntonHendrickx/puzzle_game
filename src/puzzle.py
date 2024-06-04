@@ -2,13 +2,13 @@ import math
 import pickle
 import random
 import pygame.image
-
 from src.regular_puzzle_piece import RegularPiece
 from src.timer import Timer
 
+
 class Puzzle:
 
-    #use image later instead of rect
+    # use image later instead of rect
     def __init__(self, surface, size_x, size_y, amount, image_path, rotatable):
         self.amount = amount
         self.pieces = {}
@@ -25,7 +25,7 @@ class Puzzle:
         self.create_pieces(surface, self.amounts, piece_dims)
 
     def draw(self, surface):
-        for (_,_), piece in self.pieces.items():
+        for (_, _), piece in self.pieces.items():
             piece.draw(surface)
 
     def __set_piece_dims(self, width, height, amount):
@@ -57,7 +57,7 @@ class Puzzle:
                     return square_width_2, square_height_2
         raise AttributeError("Invalid square amount")
 
-    def create_pieces(self,surface, amounts, piece_dim):
+    def create_pieces(self, surface, amounts, piece_dim):
         piece_width, piece_height = piece_dim
         cols, rows = amounts
         screen_width, screen_height = surface.get_size()
@@ -69,7 +69,7 @@ class Puzzle:
                 y = random.randint(0, int(screen_height - piece_height))
                 piece_image = self.get_piece_image(row, col, piece_width, piece_height)
                 if self.rotatable:
-                    rotation = random.randint(0,3)
+                    rotation = random.randint(0, 3)
                 self.pieces[(row, col)] = RegularPiece(x, y, piece_width, piece_height, piece_image, rotation)
 
     def find_position(self, piece):
@@ -88,13 +88,13 @@ class Puzzle:
 
     def check_collisions(self, piece):
         piece_row, piece_col = self.find_position(piece)
-        neighbors = [(piece_row-1, piece_col),(piece_row+1, piece_col),
+        neighbors = [(piece_row-1, piece_col), (piece_row+1, piece_col),
                      (piece_row, piece_col-1), (piece_row, piece_col+1)]
         for neighbor_loc in neighbors:
             neighbor = self.pieces.get(neighbor_loc)
             if neighbor:
                 rel_pos = neighbor_loc[0] - piece_row, neighbor_loc[1] - piece_col
-                if piece.check_collision(neighbor,rel_pos):
+                if piece.check_collision(neighbor, rel_pos):
                     self.connect_pieces(piece, neighbor, rel_pos)
 
     def connect_pieces(self, piece1, piece2, rel_pos):
@@ -129,10 +129,10 @@ class Puzzle:
         return None
 
     def handle_click(self, pos):
-        if not self.click: #either click to pickup or drop
+        if not self.click:  # either click to pickup or drop
             self.click = True
             if not self.active:
-                for (_,_) , piece in self.pieces.items():
+                for (_, _), piece in self.pieces.items():
                     if piece.click(pos):
                         self.active = piece
                         self.drag_timer.start()
@@ -142,7 +142,7 @@ class Puzzle:
                 self.active = None
 
     def handle_click_stop(self):
-        if self.drag_timer.is_time_up(): #dragging is active
+        if self.drag_timer.is_time_up():  # dragging is active
             self.check_collisions(self.active)
             self.active = None
         self.drag_timer.stop()
@@ -155,7 +155,7 @@ class Puzzle:
         return False
 
     def save_to_file(self, filename):
-        with open(filename,'wb') as file:
+        with open(filename, 'wb') as file:
             pickle.dump(self.serialize(), file)
 
     @staticmethod
@@ -168,12 +168,11 @@ class Puzzle:
                     return puzzle_found
                 else:
                     return None
-        except (pickle.UnpicklingError, EOFError, AttributeError, ImportError, IndexError, KeyError):
+        except (pickle.UnpicklingError, EOFError, AttributeError, ImportError, IndexError, KeyError, FileNotFoundError):
             return None
 
     def clearsave(self, filename):
         open(filename, 'w').close()
-
 
     def serialize(self):
         return {

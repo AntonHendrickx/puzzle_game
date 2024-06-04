@@ -1,9 +1,10 @@
 import pygame
 from src.puzzle_piece import Piece
 
+
 class RegularPiece(Piece):
 
-    def __init__(self, x, y, size_x, size_y, image, rotation = 0):
+    def __init__(self, x, y, size_x, size_y, image, rotation=0):
         super().__init__(x, y, image, rotation)
         self.piece = pygame.Rect(x, y, size_x, size_y)
         self.topleft = self.piece.topleft
@@ -27,9 +28,9 @@ class RegularPiece(Piece):
         if self.image:
             surface.blit(self.image, self.piece)
         else:
-            pygame.draw.rect(surface, (255,255,255), self.piece)
+            pygame.draw.rect(surface, (255, 255, 255), self.piece)
 
-    def check_collision(self, piece_tocheck, rel_pos, tolerance = 10):
+    def check_collision(self, piece_tocheck, rel_pos, tolerance=10):
         if not super().check_collision(piece_tocheck, rel_pos):
             return False
         expected_x = self.piece.x + rel_pos[1] * self.get_width()
@@ -50,7 +51,6 @@ class RegularPiece(Piece):
             new_x -= p.get_width()
         self.piece.topleft = (new_x, new_y)
         self.topleft = (new_x, new_y)
-
 
     def rotate(self, clockwise):
         super().rotate(clockwise)
@@ -74,7 +74,7 @@ class RegularPiece(Piece):
 
     @staticmethod
     def deserialize(data):
-        image = pygame.image.fromstring(data['image'], (data['width'], data['height']),"ARGB")
+        image = pygame.image.fromstring(data['image'], (data['width'], data['height']), "ARGB")
         piece_image = pygame.transform.scale(image, (data['width'], data['height']))
         piece = RegularPiece(data['x'], data['y'], data['width'], data['height'], piece_image, data['rotation'])
         return piece

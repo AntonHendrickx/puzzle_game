@@ -1,10 +1,11 @@
 import pygame
 from src.puzzle_piece import Piece
 
+
 class SquarePiece(Piece):
 
-    def __init__(self, x, y, size_x, size_y,image, rotation = 0):
-        super().__init__(x, y,image, rotation)
+    def __init__(self, x, y, size_x, size_y, image, rotation=0):
+        super().__init__(x, y, image, rotation)
         self.piece = pygame.Rect(x, y, size_x, size_y)
         self.topleft = self.piece.topleft
 
@@ -27,9 +28,9 @@ class SquarePiece(Piece):
         if self.image:
             surface.blit(self.image, self.piece)
         else:
-            pygame.draw.rect(surface, (255,255,255), self.piece)
+            pygame.draw.rect(surface, (255, 255, 255), self.piece)
 
-    def check_collision(self, piece_tocheck, rel_pos, tolerance = 10):
+    def check_collision(self, piece_tocheck, rel_pos, tolerance=10):
         if not super().check_collision(piece_tocheck, rel_pos):
             return False
         expected_x = self.piece.x + rel_pos[1] * self.get_width()

@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 
+
 class Piece(ABC):
-    def __init__(self, x, y, image, direction = 0):
+    def __init__(self, x, y, image, direction=0):
         self.DIRECTIONS = ["up", "right", "down", "left"]
-        self.topleft = (x,y)
+        self.topleft = (x, y)
         self.piece = None
         self.clicked = False
         self.direction = direction
@@ -24,7 +25,7 @@ class Piece(ABC):
     def move(self, rel):
         self.piece.move_ip(rel)
 
-    def click(self,pos):
+    def click(self, pos):
         return self.piece.collidepoint(pos)
 
     def get_dir(self):
