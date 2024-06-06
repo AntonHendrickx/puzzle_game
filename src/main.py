@@ -11,10 +11,6 @@ class Game:
         pygame.display.set_caption("Main menu")
         self.TEXT_COL = (255, 255, 255)
         self.game_state = Menu(self.screen)
-        self.image_extensions = ('.png', '.jpg', '.jpeg', '.bmp', '.gif')
-
-    def is_image_file(self, filename):
-        return filename.lower().endswith(self.image_extensions)
 
     @staticmethod
     def load_image(file_path):

@@ -1,3 +1,4 @@
+import os
 from abc import ABC, abstractmethod
 
 import pygame
@@ -51,12 +52,14 @@ class Menu(State):
         y_pos = self.surface.get_height() / 6
         self.display_text("Puzzle", x_pos, y_pos)
         if self.start_button.draw(self.surface):
+            new_state = Selection(self.surface)
+            '''
             puzzle = Puzzle.load("saves/savefile.pkl", self.surface)
             if not puzzle:
-                new_state = Play.from_new_puzzle(self.surface, 600, 300, 8, "images/puzzle_test.png")
+                new_state = Play.from_new_puzzle(self.surface, 600, 300, 800, "images/puzzle_test.png")
             else:
                 new_state = Play.from_existing_puzzle(self.surface, puzzle)
-            #start selection screen (for now play)
+            #start selection screen (for now play)'''
         if self.quit_button.draw(self.surface):
             self.quit = True
 
@@ -69,21 +72,72 @@ class Menu(State):
 class Selection(State):
     def __init__(self, surface):
         super().__init__(surface)
+        self.image_extensions = ('.png', '.jpg', '.jpeg', '.bmp', '.gif')
+        self.image_list = self.get_images()
+        self.image_index = 0
+        self.image = None
+        self.load_image(self.image_list[0])
+        self.rotate_setting = False
+        self.piece_selection = ""
+        self.play_button = button(self.surface.get_width() / 2 - 60, self.surface.get_height() * 5 / 6, 120, 50,
+                                  "Start",self.font, self.TEXT_COL, self.BACKGROUND)
+
+    def is_image_file(self, filename):
+        return filename.lower().endswith(self.image_extensions)
+
+    def get_images(self):
+        pathes = []
+        for image in os.listdir("images/"):
+            if self.is_image_file(image):
+                pathes.append("images/" + image)
+        return pathes
+
+    def load_image(self, image_path):
+        image = pygame.image.load(image_path)
+        image_width, image_height = image.get_size()
+        boundary_width = self.surface.get_width() * 2 / 3
+        boundary_height = self.surface.get_height() * 2 / 3
+        scale_factor = min(boundary_width / image_width, boundary_height / image_height)
+        new_width = int(image_width * scale_factor)
+        new_height = int(image_height * scale_factor)
+        self.image = pygame.transform.scale(image, (new_width, new_height))
 
     def handle_events(self, events):
         for event in events:
             match event.type:
+                case pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT:
+                        self.image_index = max(self.image_index - 1, 0)
+                        self.load_image(self.image_list[self.image_index])
+                    elif event.key == pygame.K_RIGHT:
+                        self.image_index = min(self.image_index + 1, len(self.image_list) - 1)
+                        self.load_image(self.image_list[self.image_index])
                 case pygame.DROPFILE:
                     pass #check if valid image, then create puzzle or something
                 case pygame.QUIT:
                     self.quit = True
+        return None
 
     def draw(self):
-        pass
+        new_state = None
+        rect = self.image.get_rect()
+        screen_center_x, screen_center_y = self.surface.get_rect().center
+        rect.center  = (screen_center_x, screen_center_y - 50)
+        self.surface.blit(self.image, rect)
+        if self.image_index != 0:
+            # pygame.draw.polygon(self.surface, self.TEXT_COL, ()) # arrow to left
+            pass
+        if self.image_index != len(self.image_list) - 1:
+            # pygame.draw.polygon(self.surface, self.TEXT_COL, ()) # arrow to right
+            pass
+        if self.play_button.draw(self.surface):
+            new_state = Play.from_new_puzzle(self.surface, self.image.get_rect().width,
+                                             self.image.get_rect().height, 8,
+                                             self.image_list[self.image_index], self.rotate_setting)
+        return new_state
 
     def resize(self):
-        pass
-
+        self.play_button.change_position(self.surface.get_width() / 2 - 60, self.surface.get_height() * 5 / 6)
 
 class Play(State):
     def __init__(self, surface, puzzle):
