@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 import pygame
 
 from src.button import button
+from src.dropdown_menu import DropDownMenu
 from src.puzzle import Puzzle
 
 
@@ -53,13 +54,6 @@ class Menu(State):
         self.display_text("Puzzle", x_pos, y_pos)
         if self.start_button.draw(self.surface):
             new_state = Selection(self.surface)
-            '''
-            puzzle = Puzzle.load("saves/savefile.pkl", self.surface)
-            if not puzzle:
-                new_state = Play.from_new_puzzle(self.surface, 600, 300, 800, "images/puzzle_test.png")
-            else:
-                new_state = Play.from_existing_puzzle(self.surface, puzzle)
-            #start selection screen (for now play)'''
         if self.quit_button.draw(self.surface):
             self.quit = True
 
@@ -78,7 +72,7 @@ class Selection(State):
         self.image = None
         self.load_image(self.image_list[0])
         self.rotate_setting = False
-        self.piece_selection = ""
+        self.piece_selector = DropDownMenu(self.surface,["8","18","32"], (self.surface.get_width() / 2 + 70, self.surface.get_height() * 5 / 6))
         self.play_button = button(self.surface.get_width() / 2 - 60, self.surface.get_height() * 5 / 6, 120, 50,
                                   "Start",self.font, self.TEXT_COL, self.BACKGROUND)
 
@@ -114,6 +108,9 @@ class Selection(State):
                         self.load_image(self.image_list[self.image_index])
                 case pygame.DROPFILE:
                     pass #check if valid image, then create puzzle or something
+                case pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        self.piece_selector.clicked(pygame.mouse.get_pos())
                 case pygame.QUIT:
                     self.quit = True
         return None
@@ -131,9 +128,14 @@ class Selection(State):
             # pygame.draw.polygon(self.surface, self.TEXT_COL, ()) # arrow to right
             pass
         if self.play_button.draw(self.surface):
-            new_state = Play.from_new_puzzle(self.surface, self.image.get_rect().width,
-                                             self.image.get_rect().height, 8,
-                                             self.image_list[self.image_index], self.rotate_setting)
+            puzzle = Puzzle.load("saves/" + self.image_list[self.image_index].replace("images/", "") + ".pkl", self.surface)
+            if not puzzle:
+                new_state = Play.from_new_puzzle(self.surface, self.image.get_rect().width,
+                                                 self.image.get_rect().height, int(self.piece_selector.selected_option),
+                                                 self.image_list[self.image_index], self.rotate_setting)
+            else:
+                new_state = Play.from_existing_puzzle(self.surface, puzzle)
+        self.piece_selector.draw_dropdown()
         return new_state
 
     def resize(self):
@@ -143,7 +145,7 @@ class Play(State):
     def __init__(self, surface, puzzle):
         super().__init__(surface)
         self.puzzle = puzzle
-        self.savefile_path = "saves/savefile.pkl"
+        self.savefile_path = "saves/" + puzzle.image_path.replace("images/", "") + ".pkl"
 
     @classmethod
     def from_new_puzzle(cls, surface, size_x, size_y, amount, image_path, rotatable=False):
@@ -209,7 +211,7 @@ class Paused(State):
         if self.resume_button.draw(self.surface):
             new_state = Play.from_existing_puzzle(self.surface, self.puzzle)
         if self.exit_button.draw(self.surface):
-            self.puzzle.save_to_file("saves/savefile.pkl")
+            self.puzzle.save_to_file()
             new_state = Menu(self.surface)
         if self.options_button.draw(self.surface):
             new_state = Options(self.surface, self.puzzle)

@@ -154,7 +154,9 @@ class Puzzle:
             return True
         return False
 
-    def save_to_file(self, filename):
+    def save_to_file(self, filename=""):
+        if filename == "":
+            filename = "saves/" + self.image_path.replace("images/", "") + ".pkl"
         with open(filename, 'wb') as file:
             pickle.dump(self.serialize(), file)
 
@@ -171,7 +173,8 @@ class Puzzle:
         except (pickle.UnpicklingError, EOFError, AttributeError, ImportError, IndexError, KeyError, FileNotFoundError):
             return None
 
-    def clearsave(self, filename):
+    @staticmethod
+    def clearsave(filename):
         open(filename, 'w').close()
 
     def serialize(self):
