@@ -20,6 +20,7 @@ class State(ABC):
     @abstractmethod
     def handle_events(self, events):
         pass
+
     @abstractmethod
     def draw(self):
         pass
@@ -30,7 +31,8 @@ class State(ABC):
 
     def display_text(self, text, x, y):
         text = self.font.render(text, True, self.TEXT_COL)
-        self.surface.blit(text, (x,y))
+        self.surface.blit(text, (x, y))
+
 
 class Menu(State):
     def __init__(self, surface):
@@ -45,7 +47,6 @@ class Menu(State):
                 case pygame.QUIT:
                     self.quit = True
         return new_state
-
 
     def draw(self):
         new_state = None
@@ -63,6 +64,7 @@ class Menu(State):
         self.start_button.change_position(self.surface.get_width() / 2 - 50, self.surface.get_height() / 2 - 5)
         self.quit_button.change_position(self.surface.get_width() / 2 - 50, self.surface.get_height() / 2 + 55)
 
+
 class Selection(State):
     def __init__(self, surface):
         super().__init__(surface)
@@ -72,9 +74,10 @@ class Selection(State):
         self.image = None
         self.load_image(self.image_list[0])
         self.rotate_setting = False
-        self.piece_selector = DropDownMenu(self.surface,["8","18","36"], (self.surface.get_width() / 2 + 70, self.surface.get_height() * 5 / 6))
+        self.piece_selector = DropDownMenu(self.surface,["8", "18", "36"],
+                                           (self.surface.get_width() / 2 + 70, self.surface.get_height() * 5 / 6))
         self.play_button = button(self.surface.get_width() / 2 - 60, self.surface.get_height() * 5 / 6, 120, 50,
-                                  "Start",self.font, self.TEXT_COL, self.BACKGROUND)
+                                  "Start", self.font, self.TEXT_COL, self.BACKGROUND)
 
     def is_image_file(self, filename):
         return filename.lower().endswith(self.image_extensions)
@@ -125,7 +128,7 @@ class Selection(State):
         if self.image:
             rect = self.image.get_rect()
             screen_center_x, screen_center_y = self.surface.get_rect().center
-            rect.center  = (screen_center_x, screen_center_y - 50)
+            rect.center = (screen_center_x, screen_center_y - 50)
             self.surface.blit(self.image, rect)
         else:
             drag_rect = pygame.Rect(0, 0, self.surface.get_height() * 2 / 3, self.surface.get_height() * 2 / 3)
@@ -133,21 +136,28 @@ class Selection(State):
             drag_rect.center = (screen_center_x, screen_center_y - 50)
             pygame.draw.rect(self.surface, self.BACKGROUND, drag_rect)
             self.display_text("Drag a file here to play!",screen_center_x-250,screen_center_y-70)
-        if self.image_index != 0:
-            # pygame.draw.polygon(self.surface, self.TEXT_COL, ()) # arrow to left
-            pass
-        if self.image_index != len(self.image_list):
-            # pygame.draw.polygon(self.surface, self.TEXT_COL, ()) # arrow to right
-            pass
+        if self.image_index > 0:
+            rect_bottomleft = (self.surface.get_width() / 6, self.surface.get_height() * 5 / 6)
+            points = [(rect_bottomleft[0], rect_bottomleft[1] + 10),
+                      (rect_bottomleft[0] - 25, rect_bottomleft[1] + 30),
+                      (rect_bottomleft[0], rect_bottomleft[1] + 50)]
+            pygame.draw.polygon(self.surface, self.TEXT_COL, points)  # arrow to right
+        if self.image_index < len(self.image_list):
+            rect_bottomright = (self.surface.get_width() * 5 / 6,self.surface.get_height() * 5 / 6)
+            points = [(rect_bottomright[0], rect_bottomright[1] + 10),
+                      (rect_bottomright[0] + 25, rect_bottomright[1] + 30),
+                      (rect_bottomright[0], rect_bottomright[1] + 50)]
+            pygame.draw.polygon(self.surface, self.TEXT_COL, points)  # arrow to left
         if self.play_button.draw(self.surface):
-            puzzle = Puzzle.load("saves/" + self.image_list[self.image_index].replace("images/", "") + ".pkl", self.surface)
+            puzzle = Puzzle.load("saves/" +
+                        self.image_list[self.image_index].replace("images/", "") + ".pkl", self.surface)
             if not puzzle:
                 try:
                     new_state = Play.from_new_puzzle(self.surface, self.image.get_rect().width,
                                                  self.image.get_rect().height, int(self.piece_selector.selected_option),
                                                  self.image_list[self.image_index], self.rotate_setting)
                 except AttributeError:
-                    #show an error
+                    # show an error
                     new_state = None
             else:
                 new_state = Play.from_existing_puzzle(self.surface, puzzle)
@@ -157,6 +167,7 @@ class Selection(State):
     def resize(self):
         self.play_button.change_position(self.surface.get_width() / 2 - 60, self.surface.get_height() * 5 / 6)
         self.piece_selector.set_position((self.surface.get_width() / 2 + 70, self.surface.get_height() * 5 / 6))
+
 
 class Play(State):
     def __init__(self, surface, puzzle):
@@ -209,9 +220,12 @@ class Play(State):
 class Paused(State):
     def __init__(self, surface, puzzle):
         super().__init__(surface)
-        self.resume_button = button(310, 500, 180, 50, "Resume", self.font, self.TEXT_COL, self.BACKGROUND)
-        self.options_button = button(310, 400, 180, 50, "Options", self.font, self.TEXT_COL, self.BACKGROUND)
-        self.exit_button = button(340, 500, 100, 50, "Exit", self.font, self.TEXT_COL, self.BACKGROUND)
+        self.resume_button = button(310, 500, 180, 50, "Resume", self.font, self.TEXT_COL,
+                                    self.BACKGROUND)
+        self.options_button = button(310, 400, 180, 50, "Options", self.font, self.TEXT_COL,
+                                     self.BACKGROUND)
+        self.exit_button = button(340, 500, 100, 50, "Exit", self.font, self.TEXT_COL,
+                                  self.BACKGROUND)
         self.puzzle = puzzle
 
     def handle_events(self, events):
@@ -233,16 +247,19 @@ class Paused(State):
         if self.options_button.draw(self.surface):
             new_state = Options(self.surface, self.puzzle)
         return new_state
+
     def resize(self):
         self.resume_button.change_position(self.surface.get_width() / 2 - 90, self.surface.get_height() / 2 - 5)
         self.exit_button.change_position(self.surface.get_width() / 2 - 60, self.surface.get_height() - 100)
         self.options_button.change_position(self.surface.get_width() / 2 - 90, self.surface.get_height() * 2 / 3)
 
+
 class Options(State):
     def __init__(self, surface, puzzle):
         super().__init__(surface)
         self.puzzle = puzzle
-        self.back_button = button(340, 465, 120, 50, "Back", self.font, self.TEXT_COL, self.BACKGROUND)
+        self.back_button = button(340, 465, 120, 50, "Back", self.font, self.TEXT_COL,
+                                  self.BACKGROUND)
 
     def handle_events(self, events):
         new_state = None
