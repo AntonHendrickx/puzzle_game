@@ -57,6 +57,33 @@ class Puzzle:
                     return square_width_2, square_height_2
         raise AttributeError("Invalid square amount")
 
+    @staticmethod
+    def get_possible_piece_dims(width, height, amount):
+        def within_ratio(w, h):
+            ratio = w / h if w >= h else h / w
+            return 0.6 <= ratio <= 1.6
+
+        def factor_pairs(n):
+            return [(i, n // i) for i in range(1, int(math.sqrt(n)) + 1) if n % i == 0]
+
+        rect_ratio = width / height if width >= height else height / width
+        pairs = factor_pairs(amount)
+        pairs.sort(key=lambda x: abs(x[0] - x[1]))
+
+        for factor_w, factor_h in pairs:
+            pair_ratio = factor_w / factor_h if factor_w >= factor_h else factor_h / factor_w
+            if (rect_ratio >= 1 and pair_ratio >= 1) or (rect_ratio < 1 and pair_ratio < 1):
+                square_width = width / factor_w
+                square_width_2 = width / factor_h
+                square_height = height / factor_h
+                square_height_2 = height / factor_w
+
+                if within_ratio(square_width, square_height):
+                    return square_width, square_height
+                elif within_ratio(square_width_2, square_height_2):
+                    return square_width_2, square_height_2
+        return "Not allowed"
+
     def create_pieces(self, surface, amounts, piece_dim):
         piece_width, piece_height = piece_dim
         cols, rows = amounts

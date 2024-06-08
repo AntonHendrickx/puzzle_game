@@ -11,7 +11,8 @@ class DropDownMenu:
     DROPDOWN_POS_Y = 50
     OPTION_HEIGHT = 40
 
-    def __init__(self, surface, options, position=(DROPDOWN_POS_X, DROPDOWN_POS_Y), dims=(BUTTON_WIDTH,BUTTON_HEIGHT, FONT_SIZE, FONT_SMALL_SIZE, OPTION_HEIGHT)):
+    def __init__(self, surface, options, position=(DROPDOWN_POS_X, DROPDOWN_POS_Y),
+                 dims=(BUTTON_WIDTH, BUTTON_HEIGHT, FONT_SIZE, FONT_SMALL_SIZE, OPTION_HEIGHT)):
         self.surface = surface
         self.show_options = False
         self.options = options
@@ -33,9 +34,10 @@ class DropDownMenu:
     def draw_dropdown(self):
         # Draw dropdown button
         button_color = self.colors["button_hover"] if self.show_options else self.colors["button_bg"]
-        pygame.draw.rect(self.surface, button_color, (self.position[0], self.position[1], self.dims[0], self.dims[1]))
-        pygame.draw.rect(self.surface, self.colors["button_border"], (self.position[0], self.position[1], self.dims[0], self.dims[1]),
-                         2)
+        pygame.draw.rect(self.surface, button_color,
+                         (self.position[0], self.position[1], self.dims[0], self.dims[1]))
+        pygame.draw.rect(self.surface, self.colors["button_border"],
+                         (self.position[0], self.position[1], self.dims[0], self.dims[1]), 2)
 
         # Render and position the text on the button
         font = pygame.font.Font(None, self.dims[2])
@@ -50,8 +52,8 @@ class DropDownMenu:
             for i, option in enumerate(self.options):
                 option_y = self.position[1] + self.dims[1] + i * self.dims[4]
                 option_rect = pygame.Rect(self.position[0], option_y, self.dims[0], self.dims[4])
-                option_color = self.colors["dropdown_hover"] if option_rect.collidepoint(pygame.mouse.get_pos()) else self.colors[
-                    "dropdown_bg"]
+                option_color = self.colors["dropdown_hover"] if option_rect.collidepoint(pygame.mouse.get_pos()) else \
+                    self.colors["dropdown_bg"]
                 pygame.draw.rect(self.surface, option_color, option_rect)
                 pygame.draw.rect(self.surface, self.colors["dropdown_border"], option_rect, 2)
 
@@ -76,3 +78,5 @@ class DropDownMenu:
             if pygame.Rect(self.position[0], self.position[1], self.dims[0], self.dims[1]).collidepoint(pos):
                 self.show_options = not self.show_options
 
+    def set_position(self, new_pos):
+        self.position = new_pos

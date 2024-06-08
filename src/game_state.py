@@ -72,7 +72,7 @@ class Selection(State):
         self.image = None
         self.load_image(self.image_list[0])
         self.rotate_setting = False
-        self.piece_selector = DropDownMenu(self.surface,["8","18","32"], (self.surface.get_width() / 2 + 70, self.surface.get_height() * 5 / 6))
+        self.piece_selector = DropDownMenu(self.surface,["8","18","36"], (self.surface.get_width() / 2 + 70, self.surface.get_height() * 5 / 6))
         self.play_button = button(self.surface.get_width() / 2 - 60, self.surface.get_height() * 5 / 6, 120, 50,
                                   "Start",self.font, self.TEXT_COL, self.BACKGROUND)
 
@@ -104,10 +104,15 @@ class Selection(State):
                         self.image_index = max(self.image_index - 1, 0)
                         self.load_image(self.image_list[self.image_index])
                     elif event.key == pygame.K_RIGHT:
-                        self.image_index = min(self.image_index + 1, len(self.image_list) - 1)
-                        self.load_image(self.image_list[self.image_index])
+                        self.image_index = min(self.image_index + 1, len(self.image_list))
+                        if self.image_index < len(self.image_list):
+                            self.load_image(self.image_list[self.image_index])
+                        else:
+                            self.image = None
                 case pygame.DROPFILE:
-                    pass #check if valid image, then create puzzle or something
+                    if self.image_index == len(self.image_list) and self.is_image_file(event.file):
+                        self.image_list.append(event.file)
+                        self.load_image(event.file)
                 case pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         self.piece_selector.clicked(pygame.mouse.get_pos())
@@ -117,22 +122,33 @@ class Selection(State):
 
     def draw(self):
         new_state = None
-        rect = self.image.get_rect()
-        screen_center_x, screen_center_y = self.surface.get_rect().center
-        rect.center  = (screen_center_x, screen_center_y - 50)
-        self.surface.blit(self.image, rect)
+        if self.image:
+            rect = self.image.get_rect()
+            screen_center_x, screen_center_y = self.surface.get_rect().center
+            rect.center  = (screen_center_x, screen_center_y - 50)
+            self.surface.blit(self.image, rect)
+        else:
+            drag_rect = pygame.Rect(0, 0, self.surface.get_height() * 2 / 3, self.surface.get_height() * 2 / 3)
+            screen_center_x, screen_center_y = self.surface.get_rect().center
+            drag_rect.center = (screen_center_x, screen_center_y - 50)
+            pygame.draw.rect(self.surface, self.BACKGROUND, drag_rect)
+            self.display_text("Drag a file here to play!",screen_center_x-250,screen_center_y-70)
         if self.image_index != 0:
             # pygame.draw.polygon(self.surface, self.TEXT_COL, ()) # arrow to left
             pass
-        if self.image_index != len(self.image_list) - 1:
+        if self.image_index != len(self.image_list):
             # pygame.draw.polygon(self.surface, self.TEXT_COL, ()) # arrow to right
             pass
         if self.play_button.draw(self.surface):
             puzzle = Puzzle.load("saves/" + self.image_list[self.image_index].replace("images/", "") + ".pkl", self.surface)
             if not puzzle:
-                new_state = Play.from_new_puzzle(self.surface, self.image.get_rect().width,
+                try:
+                    new_state = Play.from_new_puzzle(self.surface, self.image.get_rect().width,
                                                  self.image.get_rect().height, int(self.piece_selector.selected_option),
                                                  self.image_list[self.image_index], self.rotate_setting)
+                except AttributeError:
+                    #show an error
+                    new_state = None
             else:
                 new_state = Play.from_existing_puzzle(self.surface, puzzle)
         self.piece_selector.draw_dropdown()
@@ -140,6 +156,7 @@ class Selection(State):
 
     def resize(self):
         self.play_button.change_position(self.surface.get_width() / 2 - 60, self.surface.get_height() * 5 / 6)
+        self.piece_selector.set_position((self.surface.get_width() / 2 + 70, self.surface.get_height() * 5 / 6))
 
 class Play(State):
     def __init__(self, surface, puzzle):
