@@ -8,7 +8,6 @@ from src.timer import Timer
 
 class Puzzle:
 
-    # use image later instead of rect
     def __init__(self, surface, size_x, size_y, amount, image_path, rotatable):
         self.amount = amount
         self.pieces = {}
@@ -23,10 +22,21 @@ class Puzzle:
         self.image = pygame.transform.scale(image, (size_x, size_y))
         piece_dims = self.__set_piece_dims(size_x, size_y, amount)
         self.create_pieces(surface, self.amounts, piece_dims)
+        from src.stopwatch import Stopwatch
+        self.stopwatch = Stopwatch()
 
     def draw(self, surface):
         for (_, _), piece in self.pieces.items():
             piece.draw(surface)
+        self.draw_stopwatch(surface)
+
+    def draw_stopwatch(self, surface):
+        font = pygame.font.SysFont("arialblack", 20)
+        text = font.render(self.stopwatch.get_elapsed_time(), True, (255,255,255))
+        surface.blit(text, (surface.get_width()-80,0))
+
+    def pause_stopwatch(self):
+        self.stopwatch.pause_toggle()
 
     def __set_piece_dims(self, width, height, amount):
 
@@ -142,6 +152,7 @@ class Puzzle:
 
     def move(self, rel):
         if self.active:
+            self.stopwatch.start()
             group = self.find_group(self.active)
             if group:
                 for p in group:
@@ -183,7 +194,7 @@ class Puzzle:
 
     def save_to_file(self, filename=""):
         if filename == "":
-            filename = "saves/" + self.image_path.replace("images/", "") + ".pkl"
+            filename = "saves/" + self.image_path.replace("images/", "") + str(self.amount) + ".pkl"
         with open(filename, 'wb') as file:
             pickle.dump(self.serialize(), file)
 
@@ -214,7 +225,8 @@ class Puzzle:
             'connected_groups': [[self.find_position(p) for p in group] for group in self.connected_groups],
             'active': self.find_position(self.active) if self.active else None,
             'rotatable': self.rotatable,
-            'image_path': self.image_path
+            'image_path': self.image_path,
+            'stopwatch_time': self.stopwatch.elapsed_time
         }
 
     @staticmethod
@@ -224,4 +236,5 @@ class Puzzle:
         puzzle.pieces = {key: RegularPiece.deserialize(piece_data) for key, piece_data in data['pieces'].items()}
         puzzle.connected_groups = [{puzzle.pieces[pos] for pos in group} for group in data['connected_groups']]
         puzzle.active = puzzle.pieces[data['active']] if data['active'] else None
+        puzzle.stopwatch.elapsed_time = int(data['stopwatch_time'])
         return puzzle

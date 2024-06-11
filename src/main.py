@@ -11,6 +11,7 @@ class Game:
         pygame.display.set_caption("Main menu")
         self.TEXT_COL = (255, 255, 255)
         self.game_state = Menu(self.screen)
+        self.game_clock = pygame.time.Clock()
 
     @staticmethod
     def load_image(file_path):
@@ -24,6 +25,7 @@ class Game:
     def run_game(self):
         run = True
         while run:
+            self.game_clock.tick(100)
             self.screen.fill((52, 78, 91))
             events = pygame.event.get()
             next_state_1 = self.game_state.handle_events(events)

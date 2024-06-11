@@ -17,13 +17,13 @@ class RegularPiece(Piece):
 
     def draw(self, surface):
         surface_width, surface_height = surface.get_size()
-        if self.piece.left < 0:
+        if self.piece.right < 0:
             self.piece.left = 0
-        if self.piece.right > surface_width:
+        if self.piece.left > surface_width:
             self.piece.right = surface_width
-        if self.piece.top < 0:
+        if self.piece.bottom < 0:
             self.piece.top = 0
-        if self.piece.bottom > surface_height:
+        if self.piece.top > surface_height:
             self.piece.bottom = surface_height
         if self.image:
             surface.blit(self.image, self.piece)
