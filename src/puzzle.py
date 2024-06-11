@@ -32,8 +32,8 @@ class Puzzle:
 
     def draw_stopwatch(self, surface):
         font = pygame.font.SysFont("arialblack", 20)
-        text = font.render(self.stopwatch.get_elapsed_time(), True, (255,255,255))
-        surface.blit(text, (surface.get_width()-80,0))
+        text = font.render(self.stopwatch.get_elapsed_time(), True, (255, 255, 255))
+        surface.blit(text, (surface.get_width()-80, 0))
 
     def pause_stopwatch(self):
         self.stopwatch.pause_toggle()

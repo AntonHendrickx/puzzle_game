@@ -1,10 +1,12 @@
 import time
 
+
 class Stopwatch:
     def __init__(self):
         self.start_time = None
         self.elapsed_time = 0
         self.running = False
+        self.visible = True
 
     def start(self):
         if not self.running:
@@ -24,7 +26,12 @@ class Stopwatch:
         self.elapsed_time = 0
         self.running = False
 
+    def hide_show(self):
+        self.visible = not self.visible
+
     def get_elapsed_time(self):
+        if not self.visible:
+            return ""
         if self.running:
             self.elapsed_time = time.time() - self.start_time
         return self.format_time(self.elapsed_time)
@@ -39,4 +46,3 @@ class Stopwatch:
             return f"{hours}:{minutes:02}:{seconds:02}"
         else:
             return f"{minutes:02}:{seconds:02}"
-        

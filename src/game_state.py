@@ -150,8 +150,8 @@ class Selection(State):
             pygame.draw.polygon(self.surface, self.TEXT_COL, points)  # arrow to left
         if self.play_button.draw(self.surface):
             if self.image_index != len(self.image_list):
-                puzzle = Puzzle.load("saves/" + self.image_list[self.image_index].replace("images/", "")
-                                 + self.piece_selector.selected_option + ".pkl", self.surface)
+                puzzle = Puzzle.load("saves/" + self.image_list[self.image_index].replace("images/", "") +
+                                     self.piece_selector.selected_option + ".pkl", self.surface)
                 if not puzzle:
                     try:
                         new_state = Play.from_new_puzzle(self.surface, self.image.get_rect().width,
@@ -175,7 +175,7 @@ class Play(State):
     def __init__(self, surface, puzzle):
         super().__init__(surface)
         self.puzzle = puzzle
-        self.savefile_path = "saves/" + puzzle.image_path.replace("images/", "") + ".pkl"
+        self.savefile_path = "saves/" + puzzle.image_path.replace("images/", "") + str(self.puzzle.amount) + ".pkl"
 
     @classmethod
     def from_new_puzzle(cls, surface, size_x, size_y, amount, image_path, rotatable=False):
@@ -239,6 +239,9 @@ class Paused(State):
                     if event.key == pygame.K_ESCAPE:
                         new_state = Play(self.surface, self.puzzle)
                         self.puzzle.pause_stopwatch()
+                case pygame.QUIT:
+                    self.puzzle.save_to_file()
+                    self.quit = True
         return new_state
 
     def draw(self):
@@ -263,25 +266,39 @@ class Paused(State):
 class Options(State):
     def __init__(self, surface, puzzle):
         super().__init__(surface)
+        self.smallfont = pygame.font.SysFont("arialblack",20)
         self.puzzle = puzzle
         self.back_button = button(340, 465, 120, 50, "Back", self.font, self.TEXT_COL,
                                   self.BACKGROUND)
+        self.stopwatch_toggle = button(430,300, 30, 30, "", self.smallfont,
+                                       self.TEXT_COL, self.BACKGROUND)
+
+    def display_small_text(self, text, x, y):
+        text = self.smallfont.render(text, True, self.TEXT_COL)
+        self.surface.blit(text, (x, y))
 
     def handle_events(self, events):
         new_state = None
         for event in events:
             if event.type == pygame.QUIT:
-                self.puzzle.save_to_file("saves/savefile.pkl")
-                new_state = True
+                self.puzzle.save_to_file()
+                self.quit = True
         return new_state
 
     def draw(self):
         new_state = None
         self.display_text("Options", self.surface.get_width() / 2 - 90, self.surface.get_height() / 6)
+        self.display_small_text("Hide timer", self.surface.get_width() * 2 / 5 , self.surface.get_height() / 2 + 10)
         if self.back_button.draw(self.surface):
             new_state = Paused(self.surface, self.puzzle)
-
+        if self.stopwatch_toggle.draw(self.surface):
+            self.puzzle.stopwatch.hide_show()
+        if self.puzzle.stopwatch.visible:
+            self.stopwatch_toggle.button_color = self.BACKGROUND
+        else:
+            self.stopwatch_toggle.button_color = (240, 240, 240)
         return new_state
 
     def resize(self):
         self.back_button.change_position(self.surface.get_width() / 2 - 60, self.surface.get_height() * 3 / 4 + 15)
+        self.stopwatch_toggle.change_position(self.surface.get_width() / 2 + 30, self.surface.get_height() / 2 + 10)
