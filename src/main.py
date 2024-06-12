@@ -1,5 +1,5 @@
 import pygame
-from src.game_state import Menu
+from game_state import Menu
 
 
 class Game:

@@ -3,15 +3,17 @@ from abc import ABC, abstractmethod
 
 import pygame
 
-from src.button import button
-from src.dropdown_menu import DropDownMenu
-from src.puzzle import Puzzle
+from button import button
+from dropdown_menu import DropDownMenu
+from puzzle import Puzzle
+from regular_puzzle import RegularPuzzle
 
 
 class State(ABC):
 
     def __init__(self, surface):
         self.font = pygame.font.SysFont("arialblack", 40)
+        self.smallfont = pygame.font.SysFont("arialblack", 20)
         self.TEXT_COL = (255, 255, 255)
         self.BACKGROUND = (42, 68, 81)
         self.surface = surface
@@ -31,6 +33,10 @@ class State(ABC):
 
     def display_text(self, text, x, y):
         text = self.font.render(text, True, self.TEXT_COL)
+        self.surface.blit(text, (x, y))
+
+    def display_small_text(self, text, x, y):
+        text = self.smallfont.render(text, True, self.TEXT_COL)
         self.surface.blit(text, (x, y))
 
 
@@ -77,10 +83,14 @@ class Selection(State):
         if self.image is not None:
             self.piece_selector = DropDownMenu(self.surface,
                                                [str(x) for x in Puzzle.get_possible_piece_dims(
-                                                   self.image.get_rect().width,self.image.get_rect().width)],
+                                                   self.image.get_rect().width, self.image.get_rect().width)],
                                                (self.surface.get_width() / 12 - 35, self.surface.get_height() / 2))
         self.play_button = button(self.surface.get_width() / 2 - 60, self.surface.get_height() * 5 / 6, 120, 50,
                                   "Start", self.font, self.TEXT_COL, self.BACKGROUND)
+        self.rotation_toggle = button(self.surface.get_width() / 4 + 50, self.surface.get_height() * 5 / 6 + 15,
+                                      30, 30, "", self.smallfont, self.TEXT_COL, self.BACKGROUND)
+        self.type_selector = DropDownMenu(self.surface, ["regular"],
+                                          (self.surface.get_width() * 3 / 4, self.surface.get_height() * 5 / 6))
 
     def is_image_file(self, filename):
         return filename.lower().endswith(self.image_extensions)
@@ -115,7 +125,7 @@ class Selection(State):
                             self.load_image(self.image_list[self.image_index])
                             if self.image is not None:
                                 self.piece_selector.options = [str(x) for x in Puzzle.get_possible_piece_dims(
-                                    self.image.get_rect().width,self.image.get_rect().width)]
+                                    self.image.get_rect().width, self.image.get_rect().width)]
                         else:
                             self.image = None
                 case pygame.DROPFILE:
@@ -125,10 +135,13 @@ class Selection(State):
                 case pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         self.piece_selector.clicked(pygame.mouse.get_pos())
+                        self.type_selector.clicked(pygame.mouse.get_pos())
                     elif event.button == 4:
                         self.piece_selector.scroll('up')
+                        self.type_selector.scroll('up')
                     elif event.button == 5:
                         self.piece_selector.scroll('down')
+                        self.type_selector.scroll('down')
                 case pygame.QUIT:
                     self.quit = True
         return None
@@ -160,11 +173,13 @@ class Selection(State):
             pygame.draw.polygon(self.surface, self.TEXT_COL, points)  # arrow to left
         if self.play_button.draw(self.surface):
             if self.image_index != len(self.image_list):
-                puzzle = Puzzle.load("saves/" + self.image_list[self.image_index].replace("images/", "") +
-                                     self.piece_selector.selected_option + ".pkl", self.surface)
+                puzzle = None
+                if self.type_selector.selected_option == 'regular':
+                    puzzle = RegularPuzzle.load("saves/" + self.image_list[self.image_index].replace("images/", "") +
+                                         self.piece_selector.selected_option + ".pkl", self.surface)
                 if not puzzle:
                     try:
-                        new_state = Play.from_new_puzzle(self.surface, self.image.get_rect().width,
+                        new_state = Play.from_new_puzzle(self.type_selector.selected_option, self.surface, self.image.get_rect().width,
                                                          self.image.get_rect().height,
                                                          int(self.piece_selector.selected_option),
                                                          self.image_list[self.image_index], self.rotate_setting)
@@ -174,11 +189,21 @@ class Selection(State):
                 else:
                     new_state = Play.from_existing_puzzle(self.surface, puzzle)
         self.piece_selector.draw_dropdown()
+        self.type_selector.draw_dropdown()
+        self.display_small_text("Rotation", self.surface.get_width() / 4 - 50, self.surface.get_height() * 5 / 6 + 12)
+        if self.rotation_toggle.draw(self.surface):
+            self.rotate_setting = not self.rotate_setting
+        if self.rotate_setting:
+            self.rotation_toggle.button_color = (240, 240, 240)
+        else:
+            self.rotation_toggle.button_color = self.BACKGROUND
         return new_state
 
     def resize(self):
         self.play_button.change_position(self.surface.get_width() / 2 - 60, self.surface.get_height() * 5 / 6)
         self.piece_selector.set_position((self.surface.get_width() / 12 - 35, self.surface.get_height() / 2))
+        self.rotation_toggle.change_position(self.surface.get_width() / 4 + 50, self.surface.get_height() * 5 / 6 + 12)
+        self.type_selector.set_position((self.surface.get_width() * 3 / 4, self.surface.get_height() * 5 / 6))
 
 
 class Play(State):
@@ -188,8 +213,10 @@ class Play(State):
         self.savefile_path = "saves/" + puzzle.image_path.replace("images/", "") + str(self.puzzle.amount) + ".pkl"
 
     @classmethod
-    def from_new_puzzle(cls, surface, size_x, size_y, amount, image_path, rotatable=False):
-        puzzle = Puzzle(surface, size_x, size_y, amount, image_path, rotatable)
+    def from_new_puzzle(cls, puzz_type, surface, size_x, size_y, amount, image_path, rotatable=False):
+        puzzle = None
+        if puzz_type == 'regular':
+            puzzle = RegularPuzzle(surface, size_x, size_y, amount, image_path, rotatable)
         return cls(surface, puzzle)
 
     @classmethod
@@ -276,16 +303,11 @@ class Paused(State):
 class Options(State):
     def __init__(self, surface, puzzle):
         super().__init__(surface)
-        self.smallfont = pygame.font.SysFont("arialblack", 20)
         self.puzzle = puzzle
         self.back_button = button(340, 465, 120, 50, "Back", self.font, self.TEXT_COL,
                                   self.BACKGROUND)
         self.stopwatch_toggle = button(430, 300, 30, 30, "", self.smallfont,
                                        self.TEXT_COL, self.BACKGROUND)
-
-    def display_small_text(self, text, x, y):
-        text = self.smallfont.render(text, True, self.TEXT_COL)
-        self.surface.blit(text, (x, y))
 
     def handle_events(self, events):
         new_state = None

@@ -1,18 +1,18 @@
 import math
 import pickle
-import random
 import pygame.image
-from src.regular_puzzle_piece import RegularPiece
-from src.timer import Timer
-from src.stopwatch import Stopwatch
+
+from timer import Timer
+from stopwatch import Stopwatch
+from abc import ABC, abstractmethod
 
 
-class Puzzle:
+class Puzzle(ABC):
 
     def __init__(self, surface, size_x, size_y, amount, image_path, rotatable):
         self.amount = amount
         self.pieces = {}
-        self.amounts = ()
+        self.rowcols = ()
         self.connected_groups = []
         self.active = None
         self.drag_timer = Timer(200)
@@ -22,7 +22,7 @@ class Puzzle:
         image = pygame.image.load(image_path)
         self.image = pygame.transform.scale(image, (size_x, size_y))
         piece_dims = self.__set_piece_dims(size_x, size_y, amount)
-        self.create_pieces(surface, self.amounts, piece_dims)
+        self.create_pieces(surface, self.rowcols, piece_dims)
         self.stopwatch = Stopwatch()
 
     def draw(self, surface):
@@ -60,10 +60,10 @@ class Puzzle:
                 square_height_2 = height / factor_w
 
                 if within_ratio(square_width, square_height):
-                    self.amounts = (factor_w, factor_h)
+                    self.rowcols = (factor_w, factor_h)
                     return square_width, square_height
                 elif within_ratio(square_width_2, square_height_2):
-                    self.amounts = (factor_h, factor_w)
+                    self.rowcols = (factor_h, factor_w)
                     return square_width_2, square_height_2
         raise AttributeError("Invalid square amount")
 
@@ -78,33 +78,21 @@ class Puzzle:
 
         for i in range(1, int(width) + 1):
             for j in range(1, int(height) + 1):
-                if width % i == 0 and height % j == 0:
-                    piece_width = width / i
-                    piece_height = height / j
+                piece_width = width / i
+                piece_height = height / j
 
-                    if within_ratio(piece_width, piece_height):
-                        pieces_count = i * j
-                        if 1 < pieces_count <= max_pieces:
-                            possible_amounts.append(pieces_count)
-                        else:
-                            break
+                if within_ratio(piece_width, piece_height):
+                    pieces_count = i * j
+                    if 1 < pieces_count <= max_pieces:
+                        possible_amounts.append(pieces_count)
+                    else:
+                        break
 
         return sorted(set(possible_amounts))
 
-    def create_pieces(self, surface, amounts, piece_dim):
-        piece_width, piece_height = piece_dim
-        cols, rows = amounts
-        screen_width, screen_height = surface.get_size()
-
-        for row in range(rows):
-            for col in range(cols):
-                rotation = 0
-                x = random.randint(0, int(screen_width - piece_width))
-                y = random.randint(0, int(screen_height - piece_height))
-                piece_image = self.get_piece_image(row, col, piece_width, piece_height)
-                if self.rotatable:
-                    rotation = random.randint(0, 3)
-                self.pieces[(row, col)] = RegularPiece(x, y, piece_width, piece_height, piece_image, rotation)
+    @abstractmethod
+    def create_pieces(self, surface, rowcols, piece_dim):
+        pass
 
     def find_position(self, piece):
         key_list = list(self.pieces.keys())
@@ -196,42 +184,19 @@ class Puzzle:
             pickle.dump(self.serialize(), file)
 
     @staticmethod
+    @abstractmethod
     def load(filename, surface):
-        try:
-            with open(filename, 'rb') as file:
-                obj = pickle.load(file)
-                puzzle_found = Puzzle.deserialize(obj, surface)
-                if isinstance(puzzle_found, Puzzle):
-                    return puzzle_found
-                else:
-                    return None
-        except (pickle.UnpicklingError, EOFError, AttributeError, ImportError, IndexError, KeyError, FileNotFoundError):
-            return None
+        pass
 
     @staticmethod
     def clearsave(filename):
         open(filename, 'w').close()
 
+    @abstractmethod
     def serialize(self):
-        return {
-            'size_x': self.image.get_width(),
-            'size_y': self.image.get_height(),
-            'amount': self.amount,
-            'amounts': self.amounts,
-            'pieces': {key: piece.serialize() for key, piece in self.pieces.items()},
-            'connected_groups': [[self.find_position(p) for p in group] for group in self.connected_groups],
-            'active': self.find_position(self.active) if self.active else None,
-            'rotatable': self.rotatable,
-            'image_path': self.image_path,
-            'stopwatch_time': self.stopwatch.elapsed_time
-        }
+        pass
 
     @staticmethod
+    @abstractmethod
     def deserialize(data, surface):
-        puzzle = Puzzle(surface, data['size_x'], data['size_y'], data['amount'], data['image_path'], data['rotatable'])
-        puzzle.amounts = data['amounts']
-        puzzle.pieces = {key: RegularPiece.deserialize(piece_data) for key, piece_data in data['pieces'].items()}
-        puzzle.connected_groups = [{puzzle.pieces[pos] for pos in group} for group in data['connected_groups']]
-        puzzle.active = puzzle.pieces[data['active']] if data['active'] else None
-        puzzle.stopwatch.elapsed_time = int(data['stopwatch_time'])
-        return puzzle
+        pass

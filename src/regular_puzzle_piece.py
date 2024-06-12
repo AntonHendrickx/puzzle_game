@@ -1,5 +1,5 @@
 import pygame
-from src.puzzle_piece import Piece
+from puzzle_piece import Piece
 
 
 class RegularPiece(Piece):
@@ -16,6 +16,13 @@ class RegularPiece(Piece):
         return self.piece.height
 
     def draw(self, surface):
+        self.relocate_inside_surface(surface)
+        if self.image:
+            surface.blit(self.image, self.piece)
+        else:
+            pygame.draw.rect(surface, (255, 255, 255), self.piece)
+
+    def relocate_inside_surface(self, surface):
         surface_width, surface_height = surface.get_size()
         if self.piece.right < 0:
             self.piece.left = 0
@@ -25,10 +32,19 @@ class RegularPiece(Piece):
             self.piece.top = 0
         if self.piece.top > surface_height:
             self.piece.bottom = surface_height
-        if self.image:
-            surface.blit(self.image, self.piece)
-        else:
-            pygame.draw.rect(surface, (255, 255, 255), self.piece)
+
+    def is_in_surface(self, surface):
+        surface_width, surface_height = surface.get_size()
+        in_surface = True
+        if self.piece.right < 0:
+            in_surface = False
+        if self.piece.left > surface_width:
+            in_surface = False
+        if self.piece.bottom < 0:
+            in_surface = False
+        if self.piece.top > surface_height:
+            in_surface = False
+        return in_surface
 
     def check_collision(self, piece_tocheck, rel_pos, tolerance=10):
         if not super().check_collision(piece_tocheck, rel_pos):

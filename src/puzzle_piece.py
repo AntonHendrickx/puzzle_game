@@ -50,6 +50,14 @@ class Piece(ABC):
     def serialize(self):
         pass
 
+    @abstractmethod
+    def relocate_inside_surface(self, surface):
+        pass
+
+    @abstractmethod
+    def is_in_surface(self, surface):
+        pass
+
     @staticmethod
     @abstractmethod
     def deserialize(self):
