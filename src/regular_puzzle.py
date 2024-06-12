@@ -1,7 +1,7 @@
 import pickle
 import random
-from puzzle import Puzzle
-from regular_puzzle_piece import RegularPiece
+from src.puzzle import Puzzle
+from src.regular_puzzle_piece import RegularPiece
 
 
 class RegularPuzzle(Puzzle):

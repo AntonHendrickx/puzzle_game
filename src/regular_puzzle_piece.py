@@ -1,5 +1,5 @@
 import pygame
-from puzzle_piece import Piece
+from src.puzzle_piece import Piece
 
 
 class RegularPiece(Piece):

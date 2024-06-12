@@ -2,8 +2,8 @@ import math
 import pickle
 import pygame.image
 
-from timer import Timer
-from stopwatch import Stopwatch
+from src.custom_timer import Timer
+from src.stopwatch import Stopwatch
 from abc import ABC, abstractmethod
 
 

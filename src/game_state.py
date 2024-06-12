@@ -176,13 +176,12 @@ class Selection(State):
                 puzzle = None
                 if self.type_selector.selected_option == 'regular':
                     puzzle = RegularPuzzle.load("saves/" + self.image_list[self.image_index].replace("images/", "") +
-                                         self.piece_selector.selected_option + ".pkl", self.surface)
+                                            self.piece_selector.selected_option + ".pkl", self.surface)
                 if not puzzle:
                     try:
                         new_state = Play.from_new_puzzle(self.type_selector.selected_option, self.surface, self.image.get_rect().width,
-                                                         self.image.get_rect().height,
-                                                         int(self.piece_selector.selected_option),
-                                                         self.image_list[self.image_index], self.rotate_setting)
+                                                self.image.get_rect().height, int(self.piece_selector.selected_option),
+                                                self.image_list[self.image_index], self.rotate_setting)
                     except AttributeError:
                         # show an error
                         new_state = None
