@@ -4,6 +4,7 @@ import random
 import pygame.image
 from src.regular_puzzle_piece import RegularPiece
 from src.timer import Timer
+from src.stopwatch import Stopwatch
 
 
 class Puzzle:
@@ -22,7 +23,6 @@ class Puzzle:
         self.image = pygame.transform.scale(image, (size_x, size_y))
         piece_dims = self.__set_piece_dims(size_x, size_y, amount)
         self.create_pieces(surface, self.amounts, piece_dims)
-        from src.stopwatch import Stopwatch
         self.stopwatch = Stopwatch()
 
     def draw(self, surface):
@@ -68,31 +68,28 @@ class Puzzle:
         raise AttributeError("Invalid square amount")
 
     @staticmethod
-    def get_possible_piece_dims(width, height, amount):
+    def get_possible_piece_dims(width, height):
         def within_ratio(w, h):
             ratio = w / h if w >= h else h / w
             return 0.6 <= ratio <= 1.6
 
-        def factor_pairs(n):
-            return [(i, n // i) for i in range(1, int(math.sqrt(n)) + 1) if n % i == 0]
+        possible_amounts = []
+        max_pieces = 1500
 
-        rect_ratio = width / height if width >= height else height / width
-        pairs = factor_pairs(amount)
-        pairs.sort(key=lambda x: abs(x[0] - x[1]))
+        for i in range(1, int(width) + 1):
+            for j in range(1, int(height) + 1):
+                if width % i == 0 and height % j == 0:
+                    piece_width = width / i
+                    piece_height = height / j
 
-        for factor_w, factor_h in pairs:
-            pair_ratio = factor_w / factor_h if factor_w >= factor_h else factor_h / factor_w
-            if (rect_ratio >= 1 and pair_ratio >= 1) or (rect_ratio < 1 and pair_ratio < 1):
-                square_width = width / factor_w
-                square_width_2 = width / factor_h
-                square_height = height / factor_h
-                square_height_2 = height / factor_w
+                    if within_ratio(piece_width, piece_height):
+                        pieces_count = i * j
+                        if 1 < pieces_count <= max_pieces:
+                            possible_amounts.append(pieces_count)
+                        else:
+                            break
 
-                if within_ratio(square_width, square_height):
-                    return square_width, square_height
-                elif within_ratio(square_width_2, square_height_2):
-                    return square_width_2, square_height_2
-        return "Not allowed"
+        return sorted(set(possible_amounts))
 
     def create_pieces(self, surface, amounts, piece_dim):
         piece_width, piece_height = piece_dim

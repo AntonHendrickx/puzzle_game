@@ -74,8 +74,11 @@ class Selection(State):
         self.image = None
         self.load_image(self.image_list[0])
         self.rotate_setting = False
-        self.piece_selector = DropDownMenu(self.surface, ["8", "18", "36"],
-                                           (self.surface.get_width() / 2 + 70, self.surface.get_height() * 5 / 6))
+        if self.image is not None:
+            self.piece_selector = DropDownMenu(self.surface,
+                                               [str(x) for x in Puzzle.get_possible_piece_dims(
+                                                   self.image.get_rect().width,self.image.get_rect().width)],
+                                               (self.surface.get_width() / 12 - 35, self.surface.get_height() / 2))
         self.play_button = button(self.surface.get_width() / 2 - 60, self.surface.get_height() * 5 / 6, 120, 50,
                                   "Start", self.font, self.TEXT_COL, self.BACKGROUND)
 
@@ -110,6 +113,9 @@ class Selection(State):
                         self.image_index = min(self.image_index + 1, len(self.image_list))
                         if self.image_index < len(self.image_list):
                             self.load_image(self.image_list[self.image_index])
+                            if self.image is not None:
+                                self.piece_selector.options = [str(x) for x in Puzzle.get_possible_piece_dims(
+                                    self.image.get_rect().width,self.image.get_rect().width)]
                         else:
                             self.image = None
                 case pygame.DROPFILE:
@@ -119,6 +125,10 @@ class Selection(State):
                 case pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         self.piece_selector.clicked(pygame.mouse.get_pos())
+                    elif event.button == 4:
+                        self.piece_selector.scroll('up')
+                    elif event.button == 5:
+                        self.piece_selector.scroll('down')
                 case pygame.QUIT:
                     self.quit = True
         return None
@@ -168,7 +178,7 @@ class Selection(State):
 
     def resize(self):
         self.play_button.change_position(self.surface.get_width() / 2 - 60, self.surface.get_height() * 5 / 6)
-        self.piece_selector.set_position((self.surface.get_width() / 2 + 70, self.surface.get_height() * 5 / 6))
+        self.piece_selector.set_position((self.surface.get_width() / 12 - 35, self.surface.get_height() / 2))
 
 
 class Play(State):
@@ -266,11 +276,11 @@ class Paused(State):
 class Options(State):
     def __init__(self, surface, puzzle):
         super().__init__(surface)
-        self.smallfont = pygame.font.SysFont("arialblack",20)
+        self.smallfont = pygame.font.SysFont("arialblack", 20)
         self.puzzle = puzzle
         self.back_button = button(340, 465, 120, 50, "Back", self.font, self.TEXT_COL,
                                   self.BACKGROUND)
-        self.stopwatch_toggle = button(430,300, 30, 30, "", self.smallfont,
+        self.stopwatch_toggle = button(430, 300, 30, 30, "", self.smallfont,
                                        self.TEXT_COL, self.BACKGROUND)
 
     def display_small_text(self, text, x, y):
@@ -288,7 +298,7 @@ class Options(State):
     def draw(self):
         new_state = None
         self.display_text("Options", self.surface.get_width() / 2 - 90, self.surface.get_height() / 6)
-        self.display_small_text("Hide timer", self.surface.get_width() * 2 / 5 , self.surface.get_height() / 2 + 10)
+        self.display_small_text("Hide timer", self.surface.get_width() * 2 / 5, self.surface.get_height() / 2 + 10)
         if self.back_button.draw(self.surface):
             new_state = Paused(self.surface, self.puzzle)
         if self.stopwatch_toggle.draw(self.surface):
