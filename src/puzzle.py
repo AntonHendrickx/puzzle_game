@@ -24,6 +24,7 @@ class Puzzle(ABC):
         piece_dims = self.__set_piece_dims(size_x, size_y, amount)
         self.create_pieces(surface, self.rowcols, piece_dims)
         self.stopwatch = Stopwatch()
+        self.save_path = self.image_path + str(self.amount) + ".pkl"
 
     def draw(self, surface):
         for (_, _), piece in self.pieces.items():
@@ -179,7 +180,7 @@ class Puzzle(ABC):
 
     def save_to_file(self, filename=""):
         if filename == "":
-            filename = "saves/" + self.image_path.replace("images/", "") + str(self.amount) + ".pkl"
+            filename = self.save_path
         with open(filename, 'wb') as file:
             pickle.dump(self.serialize(), file)
 

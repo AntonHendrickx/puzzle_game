@@ -16,6 +16,7 @@ class SquarePiece(Piece):
         return self.piece.height
 
     def draw(self, surface):
+        self.relocate_inside_surface(surface)
         if self.image:
             surface.blit(self.image, self.piece)
         else:
@@ -57,13 +58,13 @@ class SquarePiece(Piece):
     def set_position(self, p, rel_pos):
         new_x, new_y = p.piece.topleft
         if rel_pos == (1, 0):
-            new_y += p.get_height()
+            new_y -= p.get_height()
         elif rel_pos == (-1, 0):
-            new_y -= self.piece.height
+            new_y += self.piece.height
         elif rel_pos == (0, -1):
-            new_x -= self.piece.width
+            new_x += self.piece.width
         elif rel_pos == (0, 1):
-            new_x += p.get_width()
+            new_x -= p.get_width()
         self.piece.topleft = (new_x, new_y)
         self.topleft = (new_x, new_y)
 
@@ -78,7 +79,18 @@ class SquarePiece(Piece):
             self.piece = self.image.get_rect(center=old_center)
 
     def serialize(self):
-        pass
+        return {
+            'x': self.piece.x,
+            'y': self.piece.y,
+            'width': self.piece.width,
+            'height': self.piece.height,
+            'image': pygame.image.tostring(self.image, "ARGB"),
+            'rotation': self.direction
+        }
 
-    def deserialize(self):
-        pass
+    @staticmethod
+    def deserialize(data):
+        image = pygame.image.fromstring(data['image'], (data['width'], data['height']), "ARGB")
+        piece_image = pygame.transform.scale(image, (data['width'], data['height']))
+        piece = SquarePiece(data['x'], data['y'], data['width'], data['height'], piece_image, data['rotation'])
+        return piece

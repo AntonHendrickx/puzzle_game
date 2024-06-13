@@ -8,7 +8,7 @@ class Game:
         self.SCREEN_WIDTH = 1200
         self.SCREEN_HEIGHT = 900
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.RESIZABLE)
-        pygame.display.set_caption("Main menu")
+        pygame.display.set_caption("Puzzle Game")
         self.TEXT_COL = (255, 255, 255)
         self.game_state = Menu(self.screen)
         self.game_clock = pygame.time.Clock()
