@@ -55,7 +55,7 @@ class RegularPiece(Piece):
         is_close_y = abs(piece_tocheck.piece.y - expected_y) <= tolerance
         return is_close_x and is_close_y
 
-    def set_position(self, p, rel_pos):
+    def attach_to_piece(self, p, rel_pos):
         new_x, new_y = p.piece.topleft
         if rel_pos == (1, 0):
             new_y -= p.get_height()
@@ -65,8 +65,10 @@ class RegularPiece(Piece):
             new_x += self.piece.width
         elif rel_pos == (0, 1):
             new_x -= p.get_width()
+        rel_change = (new_x - self.piece.topleft[0], new_y - self.piece.topleft[1])
         self.piece.topleft = (new_x, new_y)
         self.topleft = (new_x, new_y)
+        return rel_change
 
     def rotate(self, clockwise):
         super().rotate(clockwise)

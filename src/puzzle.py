@@ -97,19 +97,27 @@ class Puzzle(ABC):
         piece_row, piece_col = self.find_position(piece)
         neighbors = [(piece_row-1, piece_col), (piece_row+1, piece_col),
                      (piece_row, piece_col-1), (piece_row, piece_col+1)]
+        piece_group = self.find_group(piece)
         for neighbor_loc in neighbors:
             neighbor = self.pieces.get(neighbor_loc)
-            if neighbor and piece.check_collision(neighbor, (neighbor_loc[0] - piece_row, neighbor_loc[1] - piece_col)):
+            if (neighbor and (piece_group is None or neighbor not in piece_group) and
+                    piece.check_collision(neighbor, (neighbor_loc[0] - piece_row, neighbor_loc[1] - piece_col))):
                 self.connect_pieces(piece, neighbor, (neighbor_loc[0] - piece_row, neighbor_loc[1] - piece_col))
 
     def connect_pieces(self, piece1, piece2, rel_pos):
         group1, group2 = self.find_group(piece1), self.find_group(piece2)
-        piece1.set_position(piece2, rel_pos)
+        rel_change = piece1.attach_to_piece(piece2, rel_pos)
         if group1 and group2:
             if group1 != group2:
+                for piece in group1:
+                    if piece != piece1:
+                        piece.move(rel_change)
                 group1.update(group2)
                 self.connected_groups.remove(group2)
         elif group1:
+            for piece in group1:
+                if piece != piece1:
+                    piece.move(rel_change)
             group1.add(piece2)
         elif group2:
             group2.add(piece1)
@@ -142,12 +150,24 @@ class Puzzle(ABC):
                         self.drag_timer.start()
                         break
             else:
-                self.check_collisions(self.active)
+                group = self.find_group(self.active)
+                if group:
+                    loop_group = group.copy()
+                    for piece in loop_group:
+                        self.check_collisions(piece)
+                else:
+                    self.check_collisions(self.active)
                 self.active = None
 
     def handle_click_stop(self):
         if self.drag_timer.is_time_up():  # dragging is active
-            self.check_collisions(self.active)
+            group = self.find_group(self.active)
+            if group:
+                loop_group = group.copy()
+                for piece in loop_group:
+                    self.check_collisions(piece)
+            else:
+                self.check_collisions(self.active)
             self.active = None
         self.drag_timer.stop()
         self.click = False

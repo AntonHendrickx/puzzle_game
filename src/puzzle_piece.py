@@ -43,7 +43,7 @@ class Piece(ABC):
         return piece_tocheck.get_dir() == self.get_dir()
 
     @abstractmethod
-    def set_position(self, p, rel_pos):
+    def attach_to_piece(self, p, rel_pos):
         pass
 
     @abstractmethod

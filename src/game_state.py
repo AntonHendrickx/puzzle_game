@@ -185,11 +185,11 @@ class Selection(State):
                 if self.type_selector.selected_option == 'regular':
                     puzzle = RegularPuzzle.load("saves/" + self.type_selector.selected_option +
                                                 self.image_list[self.image_index].replace("images/", "") +
-                                            self.piece_selector.selected_option + ".pkl", self.surface)
+                                                self.piece_selector.selected_option + ".pkl", self.surface)
                 elif self.type_selector.selected_option == 'square':
                     puzzle = SquarePuzzle.load("saves/" + self.type_selector.selected_option +
                                                self.image_list[self.image_index].replace("images/", "") +
-                                                self.piece_selector.selected_option + ".pkl", self.surface)
+                                               self.piece_selector.selected_option + ".pkl", self.surface)
                 if not puzzle:
                     try:
                         new_state = Play.from_new_puzzle(self.type_selector.selected_option, self.surface,
@@ -227,7 +227,7 @@ class Play(State):
         self.puzzle = puzzle
         if puzz_type != '':
             self.savefile_path = ("saves/" + puzz_type + puzzle.image_path.replace("images/", "") +
-                              str(self.puzzle.get_amount()) + ".pkl")
+                                                            str(self.puzzle.get_amount()) + ".pkl")
             self.puzzle.save_path = self.savefile_path
             self.puzz_type = puzz_type
 
