@@ -26,7 +26,7 @@ class SquarePuzzle(Puzzle):
             'type': 'square',
             'size_x': self.image.get_width(),
             'size_y': self.image.get_height(),
-            'amount': self.amount,
+            'amount': self.get_amount(),
             'rowcols': self.rowcols,
             'pieces': {key: piece.serialize() for key, piece in self.pieces.items()},
             'connected_groups': [[self.find_position(p) for p in group] for group in self.connected_groups],

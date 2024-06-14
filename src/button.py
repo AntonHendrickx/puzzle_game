@@ -1,9 +1,9 @@
 import pygame
 
 
-class button:
-    def __init__(self, x, y, sizeX, sizeY, text, font, txt_colour, btn_colour):
-        self.rect = pygame.Rect(x, y, sizeX, sizeY)
+class Button:
+    def __init__(self, x, y, size_x, size_y, text, font, txt_colour, btn_colour):
+        self.rect = pygame.Rect(x, y, size_x, size_y)
         self.text = text
         self.font = font
         self.text_color = txt_colour
@@ -12,9 +12,7 @@ class button:
 
     def draw(self, surface):
         action = False
-
         pos = pygame.mouse.get_pos()
-
         if self.rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1 and not self.clicked:
                 self.clicked = True
@@ -29,5 +27,5 @@ class button:
 
         return action
 
-    def change_position(self, newX, newY):
-        self.rect.topleft = (newX, newY)
+    def change_position(self, new_x, new_y):
+        self.rect.topleft = (new_x, new_y)
