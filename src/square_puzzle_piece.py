@@ -8,6 +8,7 @@ class SquarePiece(Piece):
         super().__init__(x, y, image, rotation)
         self.piece = pygame.Rect(x, y, size_x, size_y)
         self.topleft = self.piece.topleft
+        self.rotate_dir(rotation)
 
     def get_width(self):
         return self.piece.width
@@ -65,20 +66,24 @@ class SquarePiece(Piece):
             new_x += self.piece.width
         elif rel_pos == (0, 1):
             new_x -= p.get_width()
-        rel_change = (self.piece.topleft[0] - new_x, self.piece.topleft[1] - new_y)
+        rel_change = (new_x - self.piece.topleft[0], new_y - self.piece.topleft[1])
         self.piece.topleft = (new_x, new_y)
         self.topleft = (new_x, new_y)
         return rel_change
 
     def rotate(self, clockwise):
         super().rotate(clockwise)
+        angle = 90 if clockwise else -90
+        self.image = pygame.transform.rotate(self.image, angle)
         old_center = self.piece.center
-        if clockwise:
-            pygame.transform.rotate(self.image, -90)
-            self.piece = self.image.get_rect(center=old_center)
-        else:
-            pygame.transform.rotate(self.image, 90)
-            self.piece = self.image.get_rect(center=old_center)
+        self.piece = self.image.get_rect(center=old_center)
+
+    def rotate_dir(self, direction):
+        self.direction = direction
+        angle = direction * 90
+        self.image = pygame.transform.rotate(self.image, angle)
+        old_center = self.piece.center
+        self.piece = self.image.get_rect(center=old_center)
 
     def serialize(self):
         return {

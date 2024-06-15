@@ -34,9 +34,13 @@ class Piece(ABC):
     @abstractmethod
     def rotate(self, clockwise):
         if clockwise:
-            self.direction += 1
+            self.direction = (self.direction + 1) % 4
         else:
-            self.direction -= 1
+            self.direction = (self.direction - 1) % 4
+
+    @abstractmethod
+    def rotate_dir(self, direction):
+        pass
 
     @abstractmethod
     def check_collision(self, piece_tocheck, rel_pos):

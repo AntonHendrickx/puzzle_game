@@ -8,6 +8,7 @@ class RegularPiece(Piece):
         super().__init__(x, y, image, rotation)
         self.piece = pygame.Rect(x, y, size_x, size_y)
         self.topleft = self.piece.topleft
+        self.rotate_dir(rotation)
 
     def get_width(self):
         return self.piece.width
@@ -72,13 +73,17 @@ class RegularPiece(Piece):
 
     def rotate(self, clockwise):
         super().rotate(clockwise)
+        angle = 90 if clockwise else -90
+        self.image = pygame.transform.rotate(self.image, angle)
         old_center = self.piece.center
-        if clockwise:
-            pygame.transform.rotate(self.image, -90)
-            self.piece = self.image.get_rect(center=old_center)
-        else:
-            pygame.transform.rotate(self.image, 90)
-            self.piece = self.image.get_rect(center=old_center)
+        self.piece = self.image.get_rect(center=old_center)
+
+    def rotate_dir(self, direction):
+        self.direction = direction
+        angle = direction * 90
+        self.image = pygame.transform.rotate(self.image, angle)
+        old_center = self.piece.center
+        self.piece = self.image.get_rect(center=old_center)
 
     def serialize(self):
         return {
