@@ -33,7 +33,8 @@ class RegularPuzzle(Puzzle):
             'active': self.find_position(self.active) if self.active else None,
             'rotatable': self.rotatable,
             'image_path': self.image_path,
-            'stopwatch_time': self.stopwatch.elapsed_time
+            'stopwatch_time': self.stopwatch.elapsed_time,
+            'save_path': self.save_path
         }
 
     @staticmethod
@@ -57,4 +58,5 @@ class RegularPuzzle(Puzzle):
         puzzle.connected_groups = [{puzzle.pieces[pos] for pos in group} for group in data['connected_groups']]
         puzzle.active = puzzle.pieces[data['active']] if data['active'] else None
         puzzle.stopwatch.elapsed_time = int(data['stopwatch_time'])
+        puzzle.save_path = data['save_path']
         return puzzle

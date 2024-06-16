@@ -24,7 +24,7 @@ class State(ABC):
         'gray': (169, 169, 169)
     }
 
-    def __init__(self, surface, background_col = COLS.get('cyan')):
+    def __init__(self, surface, background_col=COLS.get('cyan')):
         self.font = pygame.font.SysFont("arialblack", 40)
         self.smallfont = pygame.font.SysFont("arialblack", 20)
         self.TEXT_COL = self.COLS.get('white')
@@ -217,7 +217,8 @@ class Selection(State):
                         # show an error
                         new_state = None
                 else:
-                    new_state = Play.from_existing_puzzle(self.surface, self.BACKGROUND, puzzle, self.type_selector.selected_option)
+                    new_state = Play.from_existing_puzzle(self.surface, self.BACKGROUND, puzzle,
+                                                          self.type_selector.selected_option)
         self.piece_selector.draw_dropdown()
         self.type_selector.draw_dropdown()
         self.display_small_text("Rotation", self.surface.get_width() * 5 / 6 - 30, self.surface.get_height() *
@@ -239,12 +240,12 @@ class Selection(State):
 
 
 class Play(State):
-    def __init__(self, surface, background_col, puzzle, puzz_type='', from_save = False):
+    def __init__(self, surface, background_col, puzzle, puzz_type='', from_save=False):
         super().__init__(surface, background_col)
         self.puzzle = puzzle
         if puzz_type != '' and not from_save:
             self.savefile_path = ("saves/" + puzz_type + puzzle.image_path.replace("images/", "") +
-                                                    str(self.puzzle.get_amount()) + ".pkl")
+                                                str(self.puzzle.get_amount()) + ".pkl")
             self.puzzle.save_path = self.savefile_path
             self.puzz_type = puzz_type
         elif from_save:
@@ -351,7 +352,7 @@ class Options(State):
         self.stopwatch_toggle = Button(430, 300, 30, 30, "", self.smallfont,
                                        self.TEXT_COL, self.BUTTON_COL)
         self.colour_select = DropDownMenu(self.surface, list(self.COLS.keys()), (self.surface.get_width() * 3 / 4,
-                                                                        self.surface.get_height() / 2 + 10))
+                                                                            self.surface.get_height() / 2 + 10))
         self.colour_select.selected_option = list(self.COLS.keys())[list(self.COLS.values()).index(self.BACKGROUND)]
 
     def handle_events(self, events):
