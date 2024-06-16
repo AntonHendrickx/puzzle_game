@@ -91,7 +91,12 @@ class Puzzle(ABC):
 
     def rotate(self, clockwise):
         if self.active and self.rotatable:
-            self.active.rotate(clockwise)
+            group = self.find_group(self.active)
+            if group:
+                for piece in group:
+                    piece.rotate(clockwise)
+            else:
+                self.active.rotate(clockwise)
 
     def check_collisions(self, piece):
         piece_row, piece_col = self.find_position(piece)

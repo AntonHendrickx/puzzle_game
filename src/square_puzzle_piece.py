@@ -86,12 +86,13 @@ class SquarePiece(Piece):
         self.piece = self.image.get_rect(center=old_center)
 
     def serialize(self):
+        original_image = pygame.transform.rotate(self.image, 90 * (4 - self.direction))
         return {
             'x': self.piece.x,
             'y': self.piece.y,
             'width': self.piece.width,
             'height': self.piece.height,
-            'image': pygame.image.tostring(self.image, "ARGB"),
+            'image': pygame.image.tostring(original_image, "ARGB"),
             'rotation': self.direction
         }
 

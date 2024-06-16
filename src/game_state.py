@@ -13,22 +13,22 @@ class State(ABC):
 
     COLS = {
         'white': (255, 255, 255),
-        'red' : (139, 0, 0),
-        'orange' : (255, 140, 0),
-        'yellow' : (255, 215, 0),
-        'lime' : (50, 205, 50),
-        'green' : (34, 139, 34),
-        'lightblue' : (173, 216, 230),
-        'cyan' : (52, 78, 91),
-        'darkblue' : (42, 68, 81),
-        'gray' : (169, 169, 169)
+        'red': (139, 0, 0),
+        'orange': (255, 140, 0),
+        'yellow': (255, 215, 0),
+        'lime': (50, 205, 50),
+        'green': (34, 139, 34),
+        'lightblue': (130, 150, 189),
+        'cyan': (52, 78, 91),
+        'darkblue': (42, 68, 81),
+        'gray': (169, 169, 169)
     }
 
-    def __init__(self, surface):
+    def __init__(self, surface, background_col = COLS.get('cyan')):
         self.font = pygame.font.SysFont("arialblack", 40)
         self.smallfont = pygame.font.SysFont("arialblack", 20)
         self.TEXT_COL = self.COLS.get('white')
-        self.BACKGROUND = self.COLS.get('cyan')
+        self.BACKGROUND = background_col
         self.BUTTON_COL = self.COLS.get('darkblue')
         self.surface = surface
         self.quit = False
@@ -209,7 +209,7 @@ class Selection(State):
                                                self.piece_selector.selected_option + ".pkl", self.surface)
                 if not puzzle:
                     try:
-                        new_state = Play.from_new_puzzle(self.type_selector.selected_option, self.surface,
+                        new_state = Play.from_new_puzzle(self.type_selector.selected_option, self.surface, self.BACKGROUND,
                                                          self.image.get_rect().width, self.image.get_rect().height,
                                                          int(self.piece_selector.selected_option), self.image_list[
                                                              self.image_index], self.rotate_setting)
@@ -217,7 +217,7 @@ class Selection(State):
                         # show an error
                         new_state = None
                 else:
-                    new_state = Play.from_existing_puzzle(self.surface, puzzle, self.type_selector.selected_option)
+                    new_state = Play.from_existing_puzzle(self.surface, self.BACKGROUND, puzzle, self.type_selector.selected_option)
         self.piece_selector.draw_dropdown()
         self.type_selector.draw_dropdown()
         self.display_small_text("Rotation", self.surface.get_width() * 5 / 6 - 30, self.surface.get_height() *
@@ -239,27 +239,29 @@ class Selection(State):
 
 
 class Play(State):
-    def __init__(self, surface, puzzle, puzz_type=''):
-        super().__init__(surface)
+    def __init__(self, surface, background_col, puzzle, puzz_type='', from_save = False):
+        super().__init__(surface, background_col)
         self.puzzle = puzzle
-        if puzz_type != '':
+        if puzz_type != '' and not from_save:
             self.savefile_path = ("saves/" + puzz_type + puzzle.image_path.replace("images/", "") +
-                                                        str(self.puzzle.get_amount()) + ".pkl")
+                                                    str(self.puzzle.get_amount()) + ".pkl")
             self.puzzle.save_path = self.savefile_path
             self.puzz_type = puzz_type
+        elif from_save:
+            self.savefile_path = self.puzzle.save_path
 
     @classmethod
-    def from_new_puzzle(cls, puzz_type, surface, size_x, size_y, amount, image_path, rotatable=False):
+    def from_new_puzzle(cls, puzz_type, surface, background_col, size_x, size_y, amount, image_path, rotatable=False):
         puzzle = None
         if puzz_type == 'regular':
             puzzle = RegularPuzzle(surface, size_x, size_y, amount, image_path, rotatable)
         elif puzz_type == 'square':
             puzzle = SquarePuzzle(surface, size_x, size_y, amount, image_path, rotatable)
-        return cls(surface, puzzle, puzz_type)
+        return cls(surface, background_col, puzzle, puzz_type, False)
 
     @classmethod
-    def from_existing_puzzle(cls, surface, puzzle, puzz_type=''):
-        return cls(surface, puzzle, puzz_type)
+    def from_existing_puzzle(cls, surface, background_col, puzzle, puzz_type=''):
+        return cls(surface, background_col, puzzle, puzz_type, True)
 
     def handle_events(self, events):
         new_state = None
@@ -279,7 +281,7 @@ class Play(State):
                         self.puzzle.rotate(True)
                     elif event.key == pygame.K_ESCAPE:
                         self.puzzle.pause_stopwatch()
-                        new_state = Paused(self.surface, self.puzzle)
+                        new_state = Paused(self.surface, self.puzzle, self.BACKGROUND)
                 case pygame.QUIT:
                     self.puzzle.save_to_file(self.savefile_path)
                     self.quit = True
@@ -297,8 +299,8 @@ class Play(State):
 
 
 class Paused(State):
-    def __init__(self, surface, puzzle):
-        super().__init__(surface)
+    def __init__(self, surface, puzzle, background_col):
+        super().__init__(surface, background_col)
         self.resume_button = Button(310, 500, 180, 50, "Resume", self.font, self.TEXT_COL,
                                     self.BUTTON_COL)
         self.options_button = Button(310, 400, 180, 50, "Options", self.font, self.TEXT_COL,
@@ -313,7 +315,7 @@ class Paused(State):
             match event.type:
                 case pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        new_state = Play(self.surface, self.puzzle)
+                        new_state = Play(self.surface, self.BACKGROUND, self.puzzle)
                         self.puzzle.pause_stopwatch()
                 case pygame.QUIT:
                     self.puzzle.save_to_file()
@@ -325,13 +327,13 @@ class Paused(State):
         super().draw()
         self.display_text("Paused", self.surface.get_width() / 2 - 80, self.surface.get_height() / 6)
         if self.resume_button.draw(self.surface):
-            new_state = Play.from_existing_puzzle(self.surface, self.puzzle)
+            new_state = Play.from_existing_puzzle(self.surface, self.BACKGROUND, self.puzzle)
             self.puzzle.pause_stopwatch()
         if self.exit_button.draw(self.surface):
             self.puzzle.save_to_file()
             new_state = Menu(self.surface)
         if self.options_button.draw(self.surface):
-            new_state = Options(self.surface, self.puzzle)
+            new_state = Options(self.surface, self.puzzle, self.BACKGROUND)
         return new_state
 
     def resize(self):
@@ -341,15 +343,15 @@ class Paused(State):
 
 
 class Options(State):
-    def __init__(self, surface, puzzle):
-        super().__init__(surface)
+    def __init__(self, surface, puzzle, background_col):
+        super().__init__(surface, background_col)
         self.puzzle = puzzle
         self.back_button = Button(340, 465, 120, 50, "Back", self.font, self.TEXT_COL,
                                   self.BUTTON_COL)
         self.stopwatch_toggle = Button(430, 300, 30, 30, "", self.smallfont,
                                        self.TEXT_COL, self.BUTTON_COL)
-        self.colour_select = DropDownMenu(self.surface, list(self.COLS.keys()),(self.surface.get_width() * 3 / 4,
-                                                                       self.surface.get_height() / 2 + 10))
+        self.colour_select = DropDownMenu(self.surface, list(self.COLS.keys()), (self.surface.get_width() * 3 / 4,
+                                                                        self.surface.get_height() / 2 + 10))
         self.colour_select.selected_option = list(self.COLS.keys())[list(self.COLS.values()).index(self.BACKGROUND)]
 
     def handle_events(self, events):
@@ -375,7 +377,7 @@ class Options(State):
         self.display_text("Options", self.surface.get_width() / 2 - 90, self.surface.get_height() / 6)
         self.display_small_text("Hide timer", self.surface.get_width() * 2 / 5, self.surface.get_height() / 2 + 10)
         if self.back_button.draw(self.surface):
-            new_state = Paused(self.surface, self.puzzle)
+            new_state = Paused(self.surface, self.puzzle, self.BACKGROUND)
         if self.stopwatch_toggle.draw(self.surface):
             self.puzzle.stopwatch.hide_show()
         if self.puzzle.stopwatch.visible:
