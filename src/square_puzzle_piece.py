@@ -17,22 +17,28 @@ class SquarePiece(Piece):
         return self.piece.height
 
     def draw(self, surface):
-        self.relocate_inside_surface(surface)
         if self.image:
             surface.blit(self.image, self.piece)
         else:
             pygame.draw.rect(surface, (255, 255, 255), self.piece)
 
     def relocate_inside_surface(self, surface):
+        hor_move = 0
+        vert_move = 0
         surface_width, surface_height = surface.get_size()
         if self.piece.right < 0:
+            hor_move = 0 - self.piece.left
             self.piece.left = 0
         if self.piece.left > surface_width:
+            hor_move = self.piece.left - surface_width
             self.piece.right = surface_width
         if self.piece.bottom < 0:
+            vert_move = 0 - self.piece.top
             self.piece.top = 0
         if self.piece.top > surface_height:
+            vert_move = self.piece.top - surface_height
             self.piece.bottom = surface_height
+        return hor_move, vert_move
 
     def is_in_surface(self, surface):
         surface_width, surface_height = surface.get_size()

@@ -28,8 +28,28 @@ class Puzzle(ABC):
         return self.rowcols[0] * self.rowcols[1]
 
     def draw(self, surface):
+        visited_groups = []
         for piece in self.pieces.values():
-            piece.draw(surface)
+            group = self.find_group(piece)
+            if group is None:
+                piece.relocate_inside_surface(surface)
+                piece.draw(surface)
+            else:
+                if group in visited_groups:
+                    continue
+                all_outside = True
+                for grp_piece in group:
+                    if grp_piece.is_in_surface(surface):
+                        all_outside = False
+                        break
+                if all_outside:
+                    movement_vector = next(iter(group)).relocate_inside_surface(surface)
+                    for grp_piece in group:
+                        if grp_piece != next(iter(group)):
+                            grp_piece.move(movement_vector)
+                for grp_piece in group:
+                    grp_piece.draw(surface)
+                visited_groups.append(group)
         self.draw_stopwatch(surface)
 
     def draw_stopwatch(self, surface):
