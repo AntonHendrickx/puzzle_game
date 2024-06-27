@@ -21,7 +21,7 @@ This is a simple jigsaw puzzle game, coded in python and meant to be as flexible
 
 # Trello todo's
 
-View my progress [here!](https://trello.com/b/y8Ph5t37)
+View my progress [here!](https://trello.com/b/y8Ph5t37/puzzle-game-todos)
 
 # License Info
 
