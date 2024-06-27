@@ -8,7 +8,7 @@ from src.regular_puzzle_piece import RegularPiece
 class MyTestCase(unittest.TestCase):
     def test_save_piece(self):
         test_dir = os.path.dirname(__file__)
-        image_path = os.path.join(test_dir, 'puzzle_test.png')
+        image_path = os.path.join(test_dir, 'puzzle_test.jpg')
         image = pygame.image.load(image_path)
         image = pygame.transform.scale(image, (50, 50))
         piece = RegularPiece(1, 1, 50, 50, image)
@@ -18,7 +18,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_save_puzzle(self):
         test_dir = os.path.dirname(__file__)
-        image_path = os.path.join(test_dir, 'puzzle_test.png')
+        image_path = os.path.join(test_dir, 'puzzle_test.jpg')
         screen = pygame.Surface((800, 600))
         puzzle = RegularPuzzle(screen, 600, 300, 8, image_path, False)
         data = puzzle.serialize()
