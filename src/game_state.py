@@ -102,7 +102,7 @@ class Selection(State):
             self.piece_selector = DropDownMenu(self.surface,
                                                [str(x) for x in Puzzle.get_possible_piece_dims(
                                                    self.image.get_rect().width, self.image.get_rect().width)],
-                                               (self.surface.get_width() / 12 - 35, self.surface.get_height() / 2))
+                                               (self.surface.get_width() * 4 / 5 + 30, self.surface.get_height() / 3))
         self.play_button = Button(self.surface.get_width() / 2 - 60, self.surface.get_height() * 5 / 6, 120, 50,
                                   "Start", self.font, self.TEXT_COL, self.BUTTON_COL)
         self.rotation_toggle = Button(self.surface.get_width() / 4 + 50, self.surface.get_height() * 5 / 6 + 15,
@@ -131,6 +131,7 @@ class Selection(State):
         self.image = pygame.transform.scale(image, (new_width, new_height))
 
     def handle_events(self, events):
+        new_state = None
         for event in events:
             match event.type:
                 case pygame.KEYDOWN:
@@ -146,6 +147,8 @@ class Selection(State):
                                     self.image.get_rect().width, self.image.get_rect().width)]
                         else:
                             self.image = None
+                    elif event.key == pygame.K_ESCAPE:
+                        new_state = Menu(self.surface)
                 case pygame.DROPFILE:
                     if self.image_index == len(self.image_list) and self.is_image_file(event.file):
                         self.image_list.append(event.file)
@@ -162,7 +165,7 @@ class Selection(State):
                         self.type_selector.scroll('down')
                 case pygame.QUIT:
                     self.quit = True
-        return None
+        return new_state
 
     def draw_puzzle_image(self):
         if self.image:
