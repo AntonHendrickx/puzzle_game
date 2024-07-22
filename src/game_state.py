@@ -115,9 +115,9 @@ class Selection(State):
 
     def get_images(self):
         pathes = []
-        for image in os.listdir("images/"):
+        for image in os.listdir("resources/"):
             if self.is_image_file(image):
-                pathes.append("images/" + image)
+                pathes.append("resources/" + image)
         return pathes
 
     def load_image(self, image_path):
@@ -204,11 +204,11 @@ class Selection(State):
                 puzzle = None
                 if self.type_selector.selected_option == 'regular':
                     puzzle = RegularPuzzle.load("saves/" + self.type_selector.selected_option +
-                                                self.image_list[self.image_index].replace("images/", "") +
+                                                self.image_list[self.image_index].replace("resources/", "") +
                                                 self.piece_selector.selected_option + ".pkl", self.surface)
                 elif self.type_selector.selected_option == 'square':
                     puzzle = SquarePuzzle.load("saves/" + self.type_selector.selected_option +
-                                               self.image_list[self.image_index].replace("images/", "") +
+                                               self.image_list[self.image_index].replace("resources/", "") +
                                                self.piece_selector.selected_option + ".pkl", self.surface)
                 if not puzzle:
                     try:
@@ -247,7 +247,7 @@ class Play(State):
         super().__init__(surface, background_col)
         self.puzzle = puzzle
         if puzz_type != '' and not from_save:
-            self.savefile_path = ("saves/" + puzz_type + puzzle.image_path.replace("images/", "") +
+            self.savefile_path = ("saves/" + puzz_type + puzzle.image_path.replace("resources/", "") +
                                                 str(self.puzzle.get_amount()) + ".pkl")
             self.puzzle.save_path = self.savefile_path
             self.puzz_type = puzz_type

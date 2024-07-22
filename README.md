@@ -1,4 +1,6 @@
 # Puzzle game
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![GitHub Issues](https://img.shields.io/github/issues/AntonHendrickx/puzzle_game.svg)](https://github.com/AntonHendrickx/puzzle_game/issues)
 
 This is a simple jigsaw puzzle game, coded in python and meant to be as flexible as possible
 
@@ -24,6 +26,8 @@ This is a simple jigsaw puzzle game, coded in python and meant to be as flexible
 View my progress [here!](https://trello.com/b/y8Ph5t37/puzzle-game-todos)
 
 # License Info
+The general project falls under the MIT License.
 
 All images are my own or from Pixabay.
+
 Pixabay images fall under their [license](https://pixabay.com/nl/service/terms/), my own images cannot be used by anyone for any other purposes, including any commercial uses.
