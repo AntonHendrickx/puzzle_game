@@ -1,5 +1,6 @@
 import os
 import pygame
+import colour_consts
 
 from abc import ABC, abstractmethod
 from button import Button
@@ -10,26 +11,26 @@ from src.square_puzzle import SquarePuzzle
 
 
 class State(ABC):
-
-    COLS = {
-        'white': (255, 255, 255),
-        'red': (139, 0, 0),
-        'orange': (255, 140, 0),
-        'yellow': (255, 215, 0),
-        'lime': (50, 205, 50),
-        'green': (34, 139, 34),
-        'lightblue': (130, 150, 189),
-        'cyan': (52, 78, 91),
-        'darkblue': (42, 68, 81),
-        'gray': (169, 169, 169)
+    THEMES = {
+        "red": colour_consts.RED_THEME,
+        "orange": colour_consts.ORANGE_THEME,
+        "yellow": colour_consts.YELLOW_THEME,
+        "lime": colour_consts.LIME_THEME,
+        "green": colour_consts.GREEN_THEME,
+        "lightblue": colour_consts.LIGHTBLUE_THEME,
+        "cyan": colour_consts.CYAN_THEME,
+        "darkblue": colour_consts.DARKBLUE_THEME,
+        "gray": colour_consts.GRAY_THEME,
+        "white": colour_consts.WHITE_THEME
     }
 
-    def __init__(self, surface, background_col=COLS.get('cyan')):
+    def __init__(self, surface, theme=THEMES.get('darkblue')):
         self.font = pygame.font.SysFont("arialblack", 40)
         self.smallfont = pygame.font.SysFont("arialblack", 20)
-        self.TEXT_COL = self.COLS.get('white')
-        self.BACKGROUND = background_col
-        self.BUTTON_COL = self.COLS.get('darkblue')
+        self.theme = theme
+        self.TEXT_COL = theme.get('text')
+        self.BACKGROUND = theme.get('bg')
+        self.BUTTON_COL = theme.get('button')
         self.surface = surface
         self.quit = False
 
@@ -102,12 +103,13 @@ class Selection(State):
             self.piece_selector = DropDownMenu(self.surface,
                                                [str(x) for x in Puzzle.get_possible_piece_dims(
                                                    self.image.get_rect().width, self.image.get_rect().width)],
+                                               self.TEXT_COL,
                                                (self.surface.get_width() * 4 / 5 + 30, self.surface.get_height() / 3))
         self.play_button = Button(self.surface.get_width() / 2 - 60, self.surface.get_height() * 5 / 6, 120, 50,
-                                  "Start", self.font, self.TEXT_COL, self.BUTTON_COL)
+                                  "Start", self.font, self.TEXT_COL, self.BUTTON_COL, 2)
         self.rotation_toggle = Button(self.surface.get_width() / 4 + 50, self.surface.get_height() * 5 / 6 + 15,
                                       30, 30, "", self.smallfont, self.TEXT_COL, self.BUTTON_COL)
-        self.type_selector = DropDownMenu(self.surface, ["regular", "square"],
+        self.type_selector = DropDownMenu(self.surface, ["regular", "square"], self.TEXT_COL,
                                           (self.surface.get_width() * 3 / 4, self.surface.get_height() * 5 / 6))
 
     def is_image_file(self, filename):
@@ -121,7 +123,7 @@ class Selection(State):
         return pathes
 
     def load_image(self, image_path):
-        image = pygame.image.load(image_path)
+        image = pygame.image.load(image_path).convert()
         image_width, image_height = image.get_size()
         boundary_width = self.surface.get_width() * 2 / 3
         boundary_height = self.surface.get_height() * 2 / 3
@@ -135,10 +137,10 @@ class Selection(State):
         for event in events:
             match event.type:
                 case pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
+                    if event.key == (pygame.K_LEFT or pygame.K_UP):
                         self.image_index = max(self.image_index - 1, 0)
                         self.load_image(self.image_list[self.image_index])
-                    elif event.key == pygame.K_RIGHT:
+                    elif event.key == (pygame.K_RIGHT or pygame.K_DOWN):
                         self.image_index = min(self.image_index + 1, len(self.image_list))
                         if self.image_index < len(self.image_list):
                             self.load_image(self.image_list[self.image_index])
@@ -212,7 +214,8 @@ class Selection(State):
                                                self.piece_selector.selected_option + ".pkl", self.surface)
                 if not puzzle:
                     try:
-                        new_state = Play.from_new_puzzle(self.type_selector.selected_option, self.surface, self.BACKGROUND,
+                        new_state = Play.from_new_puzzle(self.type_selector.selected_option, self.surface,
+                                                         self.theme,
                                                          self.image.get_rect().width, self.image.get_rect().height,
                                                          int(self.piece_selector.selected_option), self.image_list[
                                                              self.image_index], self.rotate_setting)
@@ -220,7 +223,7 @@ class Selection(State):
                         # show an error
                         new_state = None
                 else:
-                    new_state = Play.from_existing_puzzle(self.surface, self.BACKGROUND, puzzle,
+                    new_state = Play.from_existing_puzzle(self.surface, self.theme, puzzle,
                                                           self.type_selector.selected_option)
         self.piece_selector.draw_dropdown()
         self.type_selector.draw_dropdown()
@@ -229,9 +232,9 @@ class Selection(State):
         if self.rotation_toggle.draw(self.surface):
             self.rotate_setting = not self.rotate_setting
         if self.rotate_setting:
-            self.rotation_toggle.button_color = (240, 240, 240)
+            self.rotation_toggle.button_colour = self.TEXT_COL
         else:
-            self.rotation_toggle.button_color = self.BUTTON_COL
+            self.rotation_toggle.button_colour = self.BUTTON_COL
         return new_state
 
     def resize(self):
@@ -243,12 +246,12 @@ class Selection(State):
 
 
 class Play(State):
-    def __init__(self, surface, background_col, puzzle, puzz_type='', from_save=False):
-        super().__init__(surface, background_col)
+    def __init__(self, surface, theme, puzzle, puzz_type='', from_save=False):
+        super().__init__(surface, theme)
         self.puzzle = puzzle
         if puzz_type != '' and not from_save:
             self.savefile_path = ("saves/" + puzz_type + puzzle.image_path.replace("resources/", "") +
-                                                str(self.puzzle.get_amount()) + ".pkl")
+                                  str(self.puzzle.get_amount()) + ".pkl")
             self.puzzle.save_path = self.savefile_path
             self.puzz_type = puzz_type
         elif from_save:
@@ -285,7 +288,7 @@ class Play(State):
                         self.puzzle.rotate(True)
                     elif event.key == pygame.K_ESCAPE:
                         self.puzzle.pause_stopwatch()
-                        new_state = Paused(self.surface, self.puzzle, self.BACKGROUND)
+                        new_state = Paused(self.surface, self.puzzle, self.theme)
                 case pygame.QUIT:
                     self.puzzle.save_to_file(self.savefile_path)
                     self.quit = True
@@ -293,7 +296,7 @@ class Play(State):
 
     def draw(self):
         super().draw()
-        self.puzzle.draw(self.surface)
+        self.puzzle.draw(self.surface, self.TEXT_COL)
         if self.puzzle.is_complete():
             self.puzzle.clearsave(self.savefile_path)
             return Menu(self.surface)
@@ -303,8 +306,8 @@ class Play(State):
 
 
 class Paused(State):
-    def __init__(self, surface, puzzle, background_col):
-        super().__init__(surface, background_col)
+    def __init__(self, surface, puzzle, theme):
+        super().__init__(surface, theme)
         self.resume_button = Button(310, 500, 180, 50, "Resume", self.font, self.TEXT_COL,
                                     self.BUTTON_COL)
         self.options_button = Button(310, 400, 180, 50, "Options", self.font, self.TEXT_COL,
@@ -319,7 +322,7 @@ class Paused(State):
             match event.type:
                 case pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        new_state = Play(self.surface, self.BACKGROUND, self.puzzle)
+                        new_state = Play(self.surface, self.theme, self.puzzle)
                         self.puzzle.pause_stopwatch()
                 case pygame.QUIT:
                     self.puzzle.save_to_file()
@@ -331,13 +334,13 @@ class Paused(State):
         super().draw()
         self.display_text("Paused", self.surface.get_width() / 2 - 80, self.surface.get_height() / 6)
         if self.resume_button.draw(self.surface):
-            new_state = Play.from_existing_puzzle(self.surface, self.BACKGROUND, self.puzzle)
+            new_state = Play.from_existing_puzzle(self.surface, self.theme, self.puzzle)
             self.puzzle.pause_stopwatch()
         if self.exit_button.draw(self.surface):
             self.puzzle.save_to_file()
             new_state = Menu(self.surface)
         if self.options_button.draw(self.surface):
-            new_state = Options(self.surface, self.puzzle, self.BACKGROUND)
+            new_state = Options(self.surface, self.puzzle, self.theme)
         return new_state
 
     def resize(self):
@@ -347,16 +350,17 @@ class Paused(State):
 
 
 class Options(State):
-    def __init__(self, surface, puzzle, background_col):
-        super().__init__(surface, background_col)
+    def __init__(self, surface, puzzle, theme):
+        super().__init__(surface, theme)
         self.puzzle = puzzle
         self.back_button = Button(340, 465, 120, 50, "Back", self.font, self.TEXT_COL,
                                   self.BUTTON_COL)
         self.stopwatch_toggle = Button(430, 300, 30, 30, "", self.smallfont,
                                        self.TEXT_COL, self.BUTTON_COL)
-        self.colour_select = DropDownMenu(self.surface, list(self.COLS.keys()), (self.surface.get_width() * 3 / 4,
-                                                                            self.surface.get_height() / 2 + 10))
-        self.colour_select.selected_option = list(self.COLS.keys())[list(self.COLS.values()).index(self.BACKGROUND)]
+        self.colour_select = DropDownMenu(self.surface, list(self.THEMES.keys()), self.TEXT_COL,
+                                          (self.surface.get_width() * 3 / 4,
+                                           self.surface.get_height() / 2 + 10))
+        self.colour_select.selected_option = list(self.THEMES.keys())[list(self.THEMES.values()).index(self.theme)]
 
     def handle_events(self, events):
         new_state = None
@@ -368,12 +372,21 @@ class Options(State):
                 case pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         self.colour_select.clicked(pygame.mouse.get_pos())
-                        self.BACKGROUND = self.COLS.get(self.colour_select.selected_option)
+                        self.theme = self.THEMES.get(self.colour_select.selected_option)
+                        self.BACKGROUND = self.theme.get('bg')
+                        self.TEXT_COL = self.theme.get('text')
+                        self.BUTTON_COL = self.theme.get('button')
+                        self.restyle_buttons()
                     elif event.button == 4:
                         self.colour_select.scroll('up')
                     elif event.button == 5:
                         self.colour_select.scroll('down')
         return new_state
+
+    def restyle_buttons(self):
+        self.back_button.style(self.TEXT_COL, self.BUTTON_COL)
+        self.stopwatch_toggle.style(self.TEXT_COL, self.BUTTON_COL)
+        self.colour_select.set_text_col(self.TEXT_COL)
 
     def draw(self):
         new_state = None
@@ -381,13 +394,13 @@ class Options(State):
         self.display_text("Options", self.surface.get_width() / 2 - 90, self.surface.get_height() / 6)
         self.display_small_text("Hide timer", self.surface.get_width() * 2 / 5, self.surface.get_height() / 2 + 10)
         if self.back_button.draw(self.surface):
-            new_state = Paused(self.surface, self.puzzle, self.BACKGROUND)
+            new_state = Paused(self.surface, self.puzzle, self.theme)
         if self.stopwatch_toggle.draw(self.surface):
             self.puzzle.stopwatch.hide_show()
         if self.puzzle.stopwatch.visible:
-            self.stopwatch_toggle.button_color = self.BUTTON_COL
+            self.stopwatch_toggle.button_colour = self.BUTTON_COL
         else:
-            self.stopwatch_toggle.button_color = (240, 240, 240)
+            self.stopwatch_toggle.button_colour = self.TEXT_COL
         self.colour_select.draw_dropdown()
         return new_state
 

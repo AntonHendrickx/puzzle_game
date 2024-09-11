@@ -4,14 +4,18 @@ from src.puzzle_piece import Piece
 
 class RegularPiece(Piece):
 
-    def __init__(self, x, y, size_x, size_y, image, rotation=0):
+    def __init__(self, x, y, size_x, size_y, image,rotation=0,):
         super().__init__(x, y, image, rotation)
         self.piece = pygame.Rect(x, y, size_x, size_y)
         self.topleft = self.piece.topleft
         self.rotate_dir(rotation)
+        self.tabs = {}
 
     def get_width(self):
         return self.piece.width
+
+    def add_tabs(self, tabs):
+        self.tabs = tabs
 
     def get_height(self):
         return self.piece.height
@@ -99,7 +103,8 @@ class RegularPiece(Piece):
             'width': self.piece.width,
             'height': self.piece.height,
             'image': pygame.image.tostring(original_image, "ARGB"),
-            'rotation': self.direction
+            'rotation': self.direction,
+            'tabs':self.tabs
         }
 
     @staticmethod
@@ -107,4 +112,5 @@ class RegularPiece(Piece):
         image = pygame.image.fromstring(data['image'], (data['width'], data['height']), "ARGB")
         piece_image = pygame.transform.scale(image, (data['width'], data['height']))
         piece = RegularPiece(data['x'], data['y'], data['width'], data['height'], piece_image, data['rotation'])
+        piece.add_tabs(data['tabs'])
         return piece

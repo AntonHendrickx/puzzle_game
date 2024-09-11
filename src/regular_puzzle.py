@@ -20,6 +20,39 @@ class RegularPuzzle(Puzzle):
                 if self.rotatable:
                     rotation = random.randint(0, 3)
                 self.pieces[(row, col)] = RegularPiece(x, y, piece_width, piece_height, piece_image, rotation)
+        self.assign_tabs()
+
+    def assign_tabs(self):
+        """
+        TABS: 0 means flat edge
+        1+6 are a tab family, so is 2 and 5 and 3 and 4
+        each piece gets a map: {top = x, left = x, right = x, bottom = x}
+        """
+        max_x = max(self.pieces, key=lambda pos: pos[0])[0]
+        max_y = max(self.pieces, key=lambda pos: pos[1])[1]
+
+        for (x, y), piece in self.pieces.items():
+            tabs = {'top': 0 if y == 0 else None, 'left': 0 if x == 0 else None, 'right': 0 if x == max_x else None,
+                    'bottom': 0 if y == max_y else None}
+
+            if tabs['left'] is None and (x - 1, y) in self.pieces:
+                left_neighbor = self.pieces[(x - 1, y)]
+                tabs['left'] = 7 - left_neighbor.tabs['right']
+            if tabs['top'] is None and (x, y - 1) in self.pieces:
+                top_neighbor = self.pieces[(x, y - 1)]
+                tabs['top'] = 7 - top_neighbor.tabs['bottom']
+            if tabs['right'] is None:
+                tabs['right'] = random.randint(1, 6)
+            if tabs['bottom'] is None:
+                tabs['bottom'] = random.randint(1, 6)
+
+            if (x + 1, y) in self.pieces:
+                right_neighbor = self.pieces[(x + 1, y)]
+                right_neighbor.tabs['left'] = 7 - tabs['right']
+            if (x, y + 1) in self.pieces:
+                bottom_neighbor = self.pieces[(x, y + 1)]
+                bottom_neighbor.tabs['top'] = 7 - tabs['bottom']
+            piece.add_tabs(tabs)
 
     def serialize(self):
         return {

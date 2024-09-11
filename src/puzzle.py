@@ -18,7 +18,7 @@ class Puzzle(ABC):
         self.click = False
         self.rotatable = rotatable
         self.image_path = image_path
-        self.image = pygame.transform.scale(pygame.image.load(image_path), (size_x, size_y))
+        self.image = pygame.transform.scale(pygame.image.load(image_path).convert(), (size_x, size_y))
         piece_dims = self.__set_piece_dims(size_x, size_y, amount)
         self.create_pieces(surface, self.rowcols, piece_dims)
         self.stopwatch = Stopwatch()
@@ -27,7 +27,7 @@ class Puzzle(ABC):
     def get_amount(self):
         return self.rowcols[0] * self.rowcols[1]
 
-    def draw(self, surface):
+    def draw(self, surface,text_col):
         visited_groups = []
         for piece in self.pieces.values():
             group = self.find_group(piece)
@@ -50,11 +50,11 @@ class Puzzle(ABC):
                 for grp_piece in group:
                     grp_piece.draw(surface)
                 visited_groups.append(group)
-        self.draw_stopwatch(surface)
+        self.draw_stopwatch(surface,text_col)
 
-    def draw_stopwatch(self, surface):
+    def draw_stopwatch(self, surface,text_col):
         font = pygame.font.SysFont("arialblack", 20)
-        text = font.render(self.stopwatch.get_elapsed_time(), True, (255, 255, 255))
+        text = font.render(self.stopwatch.get_elapsed_time(), True, text_col)
         surface.blit(text, (surface.get_width() - 80, 0))
 
     def pause_stopwatch(self):

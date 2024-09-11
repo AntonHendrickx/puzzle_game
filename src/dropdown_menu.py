@@ -12,7 +12,7 @@ class DropDownMenu:
     OPTION_HEIGHT = 40
     MAX_DISPLAYED_OPTIONS = 4
 
-    def __init__(self, surface, options, position=(DROPDOWN_POS_X, DROPDOWN_POS_Y),
+    def __init__(self, surface, options, text_col, position=(DROPDOWN_POS_X, DROPDOWN_POS_Y),
                  dims=(BUTTON_WIDTH, BUTTON_HEIGHT, FONT_SIZE, FONT_SMALL_SIZE, OPTION_HEIGHT)):
         self.surface = surface
         self.show_options = False
@@ -23,14 +23,14 @@ class DropDownMenu:
         self.start_index = 0
         self.colors = {
             "background": (240, 240, 240),
-            "text": (50, 50, 50),
+            "text": text_col,
             "button_bg": (200, 200, 200),
             "button_border": (150, 150, 150),
             "button_hover": (220, 220, 220),
             "dropdown_bg": (220, 220, 220),
             "dropdown_border": (150, 150, 150),
             "dropdown_hover": (200, 200, 200),
-            "dropdown_text": (50, 50, 50),
+            "dropdown_text": text_col,
         }
 
     def draw_dropdown(self):
@@ -95,3 +95,6 @@ class DropDownMenu:
                 self.start_index -= 1
             elif direction == 'down' and self.start_index + self.MAX_DISPLAYED_OPTIONS < len(self.options):
                 self.start_index += 1
+
+    def set_text_col(self, text_col):
+        self.colors['text'] = self.colors['dropdown_text'] = text_col
