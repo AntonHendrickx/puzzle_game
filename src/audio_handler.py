@@ -1,16 +1,12 @@
-import contextlib
-import os
 import threading
-from pydub.playback import play
+from audioplayer import AudioPlayer
 
 
 def play_sound_basic(sound):
-    with open(os.devnull, 'w') as target_file:
-        with contextlib.redirect_stderr(target_file):
-            play(sound)
+    AudioPlayer(sound).play(block=True)  # for some reason, block=False doesn't play sound, so threading used
 
 
-def play_sound_async(sound):
+def play_sound(sound):
     def _play():
         play_sound_basic(sound)
 

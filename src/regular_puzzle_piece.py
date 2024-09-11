@@ -4,7 +4,7 @@ from src.puzzle_piece import Piece
 
 class RegularPiece(Piece):
 
-    def __init__(self, x, y, size_x, size_y, image,rotation=0,):
+    def __init__(self, x, y, size_x, size_y, image, rotation=0,):
         super().__init__(x, y, image, rotation)
         self.piece = pygame.Rect(x, y, size_x, size_y)
         self.topleft = self.piece.topleft
@@ -104,7 +104,7 @@ class RegularPiece(Piece):
             'height': self.piece.height,
             'image': pygame.image.tostring(original_image, "ARGB"),
             'rotation': self.direction,
-            'tabs':self.tabs
+            'tabs': self.tabs
         }
 
     @staticmethod
